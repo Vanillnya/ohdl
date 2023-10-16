@@ -1,4 +1,4 @@
-// basic half adder in ohdl
+~
 
 entity HalfAdder {
     in  a: Logical,
@@ -7,9 +7,6 @@ entity HalfAdder {
     out c: Logical,    
 }
 
-/*
 arch RTL for HalfAdder {
-    o <= a xor b;
-    c <= a and b;
+    
 }
-*/
