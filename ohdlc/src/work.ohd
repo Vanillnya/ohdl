@@ -1,10 +1,8 @@
-~
-
 entity HalfAdder {
     in  a: Logical,
     in  b: Logical,
     out o: Logical,
-    out c: Logical,    
+    out c: Logical,
 }
 
 arch RTL for HalfAdder {
