@@ -3,18 +3,38 @@ use std::ops::Range;
 use ariadne::ReportKind;
 use logos::SpannedIter;
 
-use crate::{ast::span::Span, print_report, Source, TokenValue};
+use crate::{
+    ast::span::{Span, Spanned, WithSpan},
+    Source, TokenValue,
+};
 
 pub mod item;
 
 type TokenIter<'source> = itertools::PeekNth<SpannedIter<'source, TokenValue>>;
 
-pub struct Token(pub TokenValue, pub Span);
-pub struct TokenRef<'r>(pub &'r TokenValue, pub Span);
+pub struct Message<'s> {
+    pub kind: ReportKind<'s>,
+    pub span: Span,
+    pub message: String,
+    pub label_message: String,
+}
+
+pub struct Messages<'s>(pub Vec<Message<'s>>);
+
+impl<'s> Messages<'s> {
+    #[inline(always)]
+    pub fn report<T>(&mut self, message: Message<'s>) -> PResult<T> {
+        self.0.push(message);
+        Err(())
+    }
+}
+
+pub type PResult<T> = Result<T, ()>;
 
 pub struct Parser<'s> {
     pub source: Source<'s>,
     tokens: TokenIter<'s>,
+    pub messages: Messages<'s>,
 }
 
 impl<'s> Parser<'s> {
@@ -22,43 +42,34 @@ impl<'s> Parser<'s> {
         Self {
             source,
             tokens: itertools::peek_nth(tokens),
+            messages: Messages(Vec::new()),
         }
     }
 
     #[inline(always)]
-    pub fn current(&mut self) -> Result<Option<TokenRef>, ()> {
+    pub fn current(&mut self) -> PResult<Option<Spanned<&TokenValue>>> {
         match self.tokens.peek() {
-            Some((Ok(value), rng)) => Ok(Some(TokenRef(value, Span::from(rng)))),
-            Some((Err(_), span)) => {
-                let span = Span::from(span);
-                print_report(
-                    &self.source,
-                    ReportKind::Error,
-                    span,
-                    "Unknown Token",
-                    "Whatever this is here",
-                );
-                Err(())
-            }
+            Some((Ok(value), rng)) => Ok(Some(value.with_span(rng.into()))),
+            Some((Err(_), span)) => self.messages.report(Message {
+                kind: ReportKind::Error,
+                span: span.into(),
+                message: "Unknown Token".to_string(),
+                label_message: "Whatever this is here".to_string(),
+            })?,
             None => Ok(None),
         }
     }
 
     #[inline(always)]
-    pub fn next(&mut self) -> Result<Option<Token>, ()> {
+    pub fn next(&mut self) -> PResult<Option<Spanned<TokenValue>>> {
         match self.tokens.next() {
-            Some((Ok(value), rng)) => Ok(Some(Token(value, Span::from(rng)))),
-            Some((Err(_), span)) => {
-                let span = Span::from(span);
-                print_report(
-                    &self.source,
-                    ReportKind::Error,
-                    span,
-                    "Unknown Token",
-                    "Whatever this is here",
-                );
-                Err(())
-            }
+            Some((Ok(value), rng)) => Ok(Some(value.with_span(rng.into()))),
+            Some((Err(_), span)) => self.messages.report(Message {
+                kind: ReportKind::Error,
+                span: span.into(),
+                message: "Unknown Token".to_string(),
+                label_message: "Whatever this is here".to_string(),
+            })?,
             None => Ok(None),
         }
     }
@@ -69,12 +80,12 @@ impl<'s> Parser<'s> {
     }
 
     #[inline(always)]
-    pub fn span_begin(&mut self) -> Result<usize, ()> {
+    pub fn span_begin(&mut self) -> PResult<usize> {
         Span::start(self)
     }
 
     #[inline(always)]
-    pub fn span_end(&mut self, begin: usize) -> Result<Span, ()> {
+    pub fn span_end(&mut self, begin: usize) -> PResult<Span> {
         Span::with_start(self, begin)
     }
 }

@@ -8,23 +8,23 @@ use crate::{
     TokenValue,
 };
 
-use super::{Parser, TokenRef};
+use super::{PResult, Parser};
 
 impl<'s> Parser<'s> {
-    pub fn parse_item(&mut self) -> Result<Spanned<Item<'s>>, ()> {
+    pub fn parse_item(&mut self) -> PResult<Spanned<Item<'s>>> {
         let span = self.span_begin()?;
         match self.current()? {
-            Some(TokenRef(TokenValue::KwEntity, _)) => Ok(Item {
+            Some(Spanned(TokenValue::KwEntity, _)) => Ok(Item {
                 kind: ItemKind::Entity(self.parse_entity()?),
             }
             .with_span(self.span_end(span)?)),
-            Some(TokenRef(TokenValue::KwArch, _)) => panic!("arch"),
+            Some(Spanned(TokenValue::KwArch, _)) => panic!("arch"),
             Some(_) => panic!("unexpected begin of decl"),
             None => panic!("end"),
         }
     }
 
-    pub fn parse_entity(&mut self) -> Result<Entity<'s>, ()> {
+    pub fn parse_entity(&mut self) -> PResult<Entity<'s>> {
         Ok(Entity {
             _phantom: PhantomData,
         })

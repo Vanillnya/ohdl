@@ -3,14 +3,14 @@ use std::{
     ops::{Deref, DerefMut, Range},
 };
 
-use crate::parser::{Parser, TokenRef};
+use crate::parser::Parser;
 
 #[derive(Clone, Copy, Debug)]
 pub struct Span(pub usize, pub usize);
 
 impl Span {
     pub fn start(parser: &mut Parser) -> Result<usize, ()> {
-        if let Some(TokenRef(_, span)) = parser.current()? {
+        if let Some(Spanned(_, span)) = parser.current()? {
             Ok(span.0)
         } else {
             Ok(parser.source.1.len())
@@ -18,7 +18,7 @@ impl Span {
     }
 
     pub fn with_start(parser: &mut Parser, start: usize) -> Result<Self, ()> {
-        if let Some(TokenRef(_, span)) = parser.current()? {
+        if let Some(Spanned(_, span)) = parser.current()? {
             Ok(Self(start, span.1))
         } else {
             Ok(Self(start, parser.source.1.len()))
@@ -44,7 +44,7 @@ impl Into<Range<usize>> for Span {
     }
 }
 
-pub struct Spanned<T>(T, Span);
+pub struct Spanned<T>(pub T, pub Span);
 
 impl<T> Debug for Spanned<T>
 where

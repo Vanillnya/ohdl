@@ -42,7 +42,17 @@ fn main() {
     let lexer = TokenValue::lexer(text);
     let mut parser = Parser::new(Source("work.ohd".to_owned(), text), lexer.spanned());
     let item = parser.parse_item();
+
     println!("{item:#?}");
+    for msg in parser.messages.0 {
+        print_report(
+            &parser.source,
+            msg.kind,
+            msg.span,
+            msg.message,
+            msg.label_message,
+        );
+    }
 }
 
 pub fn print_report(
