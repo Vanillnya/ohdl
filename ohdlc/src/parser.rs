@@ -3,9 +3,9 @@ use std::ops::Range;
 use ariadne::ReportKind;
 use logos::SpannedIter;
 
-use crate::{ast_span::Span, print_report, Source, TokenValue};
+use crate::{ast::span::Span, print_report, Source, TokenValue};
 
-pub mod decl;
+pub mod item;
 
 type TokenIter<'source> = itertools::PeekNth<SpannedIter<'source, TokenValue>>;
 
@@ -67,8 +67,14 @@ impl<'s> Parser<'s> {
     pub fn slice(&self, span: Span) -> &'s str {
         unsafe { self.source.1.get_unchecked::<Range<usize>>(span.into()) }
     }
-}
 
-pub trait Parselet<'s>: Sized {
-    fn parse(parser: &mut Parser<'s>) -> Result<Self, ()>;
+    #[inline(always)]
+    pub fn span_begin(&mut self) -> Result<usize, ()> {
+        Span::start(self)
+    }
+
+    #[inline(always)]
+    pub fn span_end(&mut self, begin: usize) -> Result<Span, ()> {
+        Span::with_start(self, begin)
+    }
 }

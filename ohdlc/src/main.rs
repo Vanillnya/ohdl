@@ -1,11 +1,11 @@
 use std::ops::Range;
 
 use ariadne::{Label, Report, ReportKind};
-use ast_span::Span;
+use ast::span::Span;
 use logos::Logos;
-use parser::{decl::Decl, Parselet, Parser};
+use parser::Parser;
 
-mod ast_span;
+mod ast;
 mod parser;
 
 pub struct Source<'s>(pub String, pub &'s str);
@@ -41,7 +41,8 @@ fn main() {
     let text = include_str!("work.ohd");
     let lexer = TokenValue::lexer(text);
     let mut parser = Parser::new(Source("work.ohd".to_owned(), text), lexer.spanned());
-    let decl = Decl::parse(&mut parser);
+    let item = parser.parse_item();
+    println!("{item:#?}");
 }
 
 pub fn print_report(
