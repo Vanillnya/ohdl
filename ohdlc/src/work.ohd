@@ -1,4 +1,3 @@
-~
 entity HalfAdder {
     in  a: Logical,
     in  b: Logical,

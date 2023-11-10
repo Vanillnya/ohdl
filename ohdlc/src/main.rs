@@ -2,45 +2,28 @@ use std::ops::Range;
 
 use ariadne::{Label, Report, ReportKind};
 use ast::span::Span;
-use logos::Logos;
+use message::Messages;
 use parser::Parser;
 
+use crate::lexer::Lexer;
+
 mod ast;
+mod lexer;
+mod message;
 mod parser;
 
 pub struct Source<'s>(pub String, pub &'s str);
 
-#[derive(Logos, Debug)]
-#[logos(skip r"[ \t\r\n\f]+")]
-pub enum TokenValue {
-    #[token("entity")]
-    KwEntity,
-    #[token("in")]
-    KwIn,
-    #[token("out")]
-    KwOut,
-    #[token("arch")]
-    KwArch,
-    #[token("for")]
-    KwFor,
+fn main() -> Result<(), ()> {
+    let source = Source("work.ohd".to_owned(), include_str!("work.ohd"));
 
-    #[regex(r#"[_a-zA-Z][_a-zA-Z0-9]*"#)]
-    Ident,
+    println!("[STAGE] Lexer");
 
-    #[token("{")]
-    OpenCurly,
-    #[token("}")]
-    CloseCurly,
-    #[token(":")]
-    Colon,
-    #[token(",")]
-    Comma,
-}
+    let lexer = Lexer::new(&source.1);
+    let lexer = finish_stage(&source, lexer)?;
 
-fn main() {
-    let text = include_str!("work.ohd");
-    let lexer = TokenValue::lexer(text);
-    let mut parser = Parser::new(Source("work.ohd".to_owned(), text), lexer.spanned());
+    println!("[STAGE] Parser");
+    let mut parser = Parser::new(source, lexer);
     let item = parser.parse_item();
 
     println!("{item:#?}");
@@ -53,6 +36,17 @@ fn main() {
             msg.label_message,
         );
     }
+
+    Ok(())
+}
+
+fn finish_stage<T>(source: &Source, input: Result<T, Messages>) -> Result<T, ()> {
+    input.map_err(|msgs| {
+        for msg in msgs.0 {
+            print_report(source, msg.kind, msg.span, msg.message, msg.label_message);
+        }
+        ()
+    })
 }
 
 pub fn print_report(

@@ -1,32 +1,61 @@
-use std::marker::PhantomData;
-
 use crate::{
     ast::{
-        item::{Entity, Item, ItemKind},
+        item::{Entity, Item, ItemKind, Port, PortKind},
         span::{Spanned, WithSpan},
     },
-    TokenValue,
+    lexer::TokenKind,
 };
 
 use super::{PResult, Parser};
 
 impl<'s> Parser<'s> {
     pub fn parse_item(&mut self) -> PResult<Spanned<Item<'s>>> {
-        let span = self.span_begin()?;
-        match self.current()? {
-            Some(Spanned(TokenValue::KwEntity, _)) => Ok(Item {
-                kind: ItemKind::Entity(self.parse_entity()?),
-            }
-            .with_span(self.span_end(span)?)),
-            Some(Spanned(TokenValue::KwArch, _)) => panic!("arch"),
-            Some(_) => panic!("unexpected begin of decl"),
-            None => panic!("end"),
-        }
+        let span = self.span_begin();
+
+        let kind = if self.eat_token(TokenKind::KwEntity)? {
+            ItemKind::Entity(self.parse_entity()?)
+        } else if self.eat_token(TokenKind::KwArch)? {
+            todo!()
+        } else {
+            panic!("unknown ding")
+        };
+
+        let span = self.span_end(span);
+
+        Ok(Item { kind }.with_span(span))
     }
 
     pub fn parse_entity(&mut self) -> PResult<Entity<'s>> {
-        Ok(Entity {
-            _phantom: PhantomData,
-        })
+        let name = self.ident()?;
+        self.consume(TokenKind::OpenCurly)?;
+
+        let mut ports = vec![];
+
+        while self.kind()? != TokenKind::CloseCurly {
+            let span = self.span_begin();
+
+            let kind = if self.eat_token(TokenKind::KwIn)? {
+                Spanned(PortKind::Input, self.prev_span())
+            } else if self.eat_token(TokenKind::KwOut)? {
+                Spanned(PortKind::Output, self.prev_span())
+            } else {
+                panic!("wtf")
+            };
+
+            let name = self.ident()?;
+            self.consume(TokenKind::Colon)?;
+            let r#type = self.ident()?;
+
+            let span = self.span_end(span);
+
+            ports.push(Port { kind, name, r#type }.with_span(span));
+
+            if !self.eat_token(TokenKind::Comma)? {
+                break;
+            }
+        }
+
+        self.consume(TokenKind::CloseCurly)?;
+        Ok(Entity { name, ports })
     }
 }

@@ -1,91 +1,110 @@
 use std::ops::Range;
 
-use ariadne::ReportKind;
-use logos::SpannedIter;
-
 use crate::{
-    ast::span::{Span, Spanned, WithSpan},
-    Source, TokenValue,
+    ast::{
+        span::{Span, Spanned},
+        Ident,
+    },
+    lexer::{Lexer, TokenKind},
+    message::{Message, Messages},
+    Source,
 };
 
 pub mod item;
-
-type TokenIter<'source> = itertools::PeekNth<SpannedIter<'source, TokenValue>>;
-
-pub struct Message<'s> {
-    pub kind: ReportKind<'s>,
-    pub span: Span,
-    pub message: String,
-    pub label_message: String,
-}
-
-pub struct Messages<'s>(pub Vec<Message<'s>>);
-
-impl<'s> Messages<'s> {
-    #[inline(always)]
-    pub fn report<T>(&mut self, message: Message<'s>) -> PResult<T> {
-        self.0.push(message);
-        Err(())
-    }
-}
 
 pub type PResult<T> = Result<T, ()>;
 
 pub struct Parser<'s> {
     pub source: Source<'s>,
-    tokens: TokenIter<'s>,
+    lexer: Lexer,
+    cursor: usize,
     pub messages: Messages<'s>,
 }
 
 impl<'s> Parser<'s> {
-    pub fn new(source: Source<'s>, tokens: SpannedIter<'s, TokenValue>) -> Self {
+    pub fn new(source: Source<'s>, lexer: Lexer) -> Self {
         Self {
             source,
-            tokens: itertools::peek_nth(tokens),
+            lexer,
+            cursor: 0,
             messages: Messages(Vec::new()),
         }
     }
 
     #[inline(always)]
-    pub fn current(&mut self) -> PResult<Option<Spanned<&TokenValue>>> {
-        match self.tokens.peek() {
-            Some((Ok(value), rng)) => Ok(Some(value.with_span(rng.into()))),
-            Some((Err(_), span)) => self.messages.report(Message {
-                kind: ReportKind::Error,
-                span: span.into(),
-                message: "Unknown Token".to_string(),
-                label_message: "Whatever this is here".to_string(),
-            })?,
-            None => Ok(None),
+    fn current(&mut self) -> PResult<Spanned<TokenKind>> {
+        match self.lexer.0.get(self.cursor) {
+            Some(val) => Ok(*val),
+            None => self.messages.report(Message::unexpected_end(
+                self.source.1.len()..self.source.1.len(),
+            ))?,
         }
     }
 
     #[inline(always)]
-    pub fn next(&mut self) -> PResult<Option<Spanned<TokenValue>>> {
-        match self.tokens.next() {
-            Some((Ok(value), rng)) => Ok(Some(value.with_span(rng.into()))),
-            Some((Err(_), span)) => self.messages.report(Message {
-                kind: ReportKind::Error,
-                span: span.into(),
-                message: "Unknown Token".to_string(),
-                label_message: "Whatever this is here".to_string(),
-            })?,
-            None => Ok(None),
-        }
+    fn next(&mut self) -> PResult<Spanned<TokenKind>> {
+        let val = self.current()?;
+        self.bump();
+        Ok(val)
     }
 
     #[inline(always)]
-    pub fn slice(&self, span: Span) -> &'s str {
+    fn bump(&mut self) {
+        self.cursor += 1;
+    }
+
+    #[inline(always)]
+    fn slice(&self, span: Span) -> &'s str {
         unsafe { self.source.1.get_unchecked::<Range<usize>>(span.into()) }
     }
 
     #[inline(always)]
-    pub fn span_begin(&mut self) -> PResult<usize> {
-        Span::start(self)
+    fn span_begin(&mut self) -> usize {
+        match self.lexer.0.get(self.cursor) {
+            Some(Spanned(_, span)) => span.0,
+            None => self.source.1.len(),
+        }
     }
 
     #[inline(always)]
-    pub fn span_end(&mut self, begin: usize) -> PResult<Span> {
-        Span::with_start(self, begin)
+    fn span_end(&mut self, begin: usize) -> Span {
+        let end = match self.lexer.0.get(self.cursor) {
+            Some(Spanned(_, span)) => span.1,
+            None => self.source.1.len(),
+        };
+        Span(begin, end)
+    }
+
+    fn consume(&mut self, kind: TokenKind) -> PResult<Spanned<TokenKind>> {
+        let token = self.next()?;
+        if token.0 == kind {
+            Ok(token)
+        } else {
+            self.messages
+                .report(Message::unexpected_token(token.1, kind, token.0))?
+        }
+    }
+
+    fn ident(&mut self) -> PResult<Ident<'s>> {
+        self.consume(TokenKind::Ident)
+            .map(|Spanned(_, span)| Spanned(self.slice(span), span))
+    }
+
+    fn eat_token(&mut self, kind: TokenKind) -> PResult<bool> {
+        let current = self.current()?;
+        if current.0 == kind {
+            self.bump();
+            Ok(true)
+        } else {
+            Ok(false)
+        }
+    }
+
+    fn kind(&mut self) -> PResult<TokenKind> {
+        Ok(self.current()?.0)
+    }
+
+    fn prev_span(&self) -> Span {
+        self.lexer.0[self.cursor - 1].1
     }
 }
