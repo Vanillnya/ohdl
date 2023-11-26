@@ -2,7 +2,7 @@ use std::ops::Range;
 
 use crate::{
     ast::{
-        span::{Span, Spanned, WithSpan},
+        span::{Span, Spanned},
         Ident,
     },
     lexer::{Lexer, TokenKind},
@@ -75,17 +75,6 @@ impl<'s> Parser<'s> {
         };
         Span(begin, end)
     }
-
-    /*#[inline(always)]
-    fn spanned<F, T>(&mut self, f: F) -> PResult<Spanned<T>>
-    where
-        F: FnOnce() -> PResult<T>,
-    {
-        let span = self.span_enter();
-        let val = f();
-        let span = self.span_leave(span);
-        val.map(|val| val.with_span(span))
-    }*/
 
     fn consume(&mut self, kind: TokenKind) -> PResult<Spanned<TokenKind>> {
         let token = self.next()?;
