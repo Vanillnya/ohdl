@@ -10,6 +10,7 @@ use crate::{
 use super::{PResult, Parser};
 
 impl<'s> Parser<'s> {
+    /// ### Parses an [`Item`]
     pub fn parse_item(&mut self) -> PResult<Item<'s>> {
         let span = self.span_enter();
 
@@ -30,6 +31,9 @@ impl<'s> Parser<'s> {
         })
     }
 
+    /// ### Parses an [`Entity`]
+    ///
+    /// Assumes that the `entity` keyword was already consumed.
     pub fn parse_entity(&mut self) -> PResult<Entity<'s>> {
         let name = self.ident()?;
         self.consume(TokenKind::OpenCurly)?;
@@ -64,6 +68,9 @@ impl<'s> Parser<'s> {
         Ok(Entity { name, ports })
     }
 
+    /// ### Parses an [`Use`]
+    ///
+    /// Assumes that the `use` keyword was already consumed.
     pub fn parse_use(&mut self) -> PResult<Use<'s>> {
         let path = self.parse_path()?;
         self.consume(TokenKind::Semicolon)?;
