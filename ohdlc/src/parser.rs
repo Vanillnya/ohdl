@@ -2,7 +2,7 @@ use std::ops::Range;
 
 use crate::{
     ast::{
-        span::{Span, Spanned},
+        span::{Span, Spanned, WithSpan},
         Ident,
     },
     lexer::{Lexer, TokenKind},
@@ -11,6 +11,7 @@ use crate::{
 };
 
 pub mod item;
+pub mod ty;
 
 pub type PResult<T> = Result<T, ()>;
 
@@ -59,7 +60,7 @@ impl<'s> Parser<'s> {
     }
 
     #[inline(always)]
-    fn span_begin(&mut self) -> usize {
+    fn span_enter(&mut self) -> usize {
         match self.lexer.0.get(self.cursor) {
             Some(Spanned(_, span)) => span.0,
             None => self.source.1.len(),
@@ -67,13 +68,24 @@ impl<'s> Parser<'s> {
     }
 
     #[inline(always)]
-    fn span_end(&mut self, begin: usize) -> Span {
+    fn span_leave(&mut self, begin: usize) -> Span {
         let end = match self.lexer.0.get(self.cursor) {
             Some(Spanned(_, span)) => span.1,
             None => self.source.1.len(),
         };
         Span(begin, end)
     }
+
+    /*#[inline(always)]
+    fn spanned<F, T>(&mut self, f: F) -> PResult<Spanned<T>>
+    where
+        F: FnOnce() -> PResult<T>,
+    {
+        let span = self.span_enter();
+        let val = f();
+        let span = self.span_leave(span);
+        val.map(|val| val.with_span(span))
+    }*/
 
     fn consume(&mut self, kind: TokenKind) -> PResult<Spanned<TokenKind>> {
         let token = self.next()?;
@@ -107,4 +119,17 @@ impl<'s> Parser<'s> {
     fn prev_span(&self) -> Span {
         self.lexer.0[self.cursor - 1].1
     }
+}
+
+#[macro_export]
+macro_rules! spanned {
+    ($self:ident { $($calc:tt)* }) => {
+        {
+            use crate::ast::span::WithSpan;
+            let span = $self.span_enter();
+            let val = { $($calc)* };
+            let span = $self.span_leave(span);
+            val.map(|val| val.with_span(span))
+        }
+    };
 }

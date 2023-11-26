@@ -19,6 +19,8 @@ pub enum TokenKind {
     KwArch,
     #[token("for")]
     KwFor,
+    #[token("use")]
+    KwUse,
 
     #[regex(r#"[_a-zA-Z][_a-zA-Z0-9]*"#)]
     Ident,
@@ -27,10 +29,18 @@ pub enum TokenKind {
     OpenCurly,
     #[token("}")]
     CloseCurly,
+    #[token("::")]
+    ColonColon,
     #[token(":")]
     Colon,
     #[token(",")]
     Comma,
+    #[token(";")]
+    Semicolon,
+    #[token("<=")]
+    LeftBigArrow,
+    #[token("=>")]
+    RightBigArrow,
 }
 
 pub struct Lexer(pub Vec<Spanned<TokenKind>>);

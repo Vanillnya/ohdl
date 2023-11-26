@@ -1,16 +1,21 @@
 use std::marker::PhantomData;
 
-use super::{span::Spanned, Ident};
+use super::{
+    span::Spanned,
+    ty::{Path, Type},
+    Ident,
+};
 
 #[derive(Debug)]
 pub struct Item<'s> {
-    pub kind: ItemKind<'s>,
+    pub base: Spanned<ItemBase<'s>>,
 }
 
 #[derive(Debug)]
-pub enum ItemKind<'s> {
+pub enum ItemBase<'s> {
     Entity(Entity<'s>),
     Arch(Arch<'s>),
+    Use(Use<'s>),
 }
 
 #[derive(Debug)]
@@ -23,7 +28,7 @@ pub struct Entity<'s> {
 pub struct Port<'s> {
     pub kind: Spanned<PortKind>,
     pub name: Ident<'s>,
-    pub r#type: Ident<'s>,
+    pub r#type: Spanned<Type<'s>>,
 }
 
 #[derive(Debug)]
@@ -36,4 +41,9 @@ pub enum PortKind {
 #[derive(Debug)]
 pub struct Arch<'s> {
     pub _phantom: PhantomData<&'s ()>,
+}
+
+#[derive(Debug)]
+pub struct Use<'s> {
+    pub path: Path<'s>,
 }

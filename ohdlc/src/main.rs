@@ -24,7 +24,7 @@ fn main() -> Result<(), ()> {
 
     println!("[STAGE] Parser");
     let mut parser = Parser::new(source, lexer);
-    let item = parser.parse_item();
+    let item = (parser.parse_item(), parser.parse_item());
 
     println!("{item:#?}");
     for msg in parser.messages.0 {
