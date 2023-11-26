@@ -1,3 +1,5 @@
+use std::Logical;
+
 entity HalfAdder {
     in  a: Logical,
     in  b: Logical,
@@ -6,5 +8,32 @@ entity HalfAdder {
 }
 
 arch RTL for HalfAdder {
-    
+    o <= a xor b;
+    c <= a and b;
+}
+
+entity FullAdder {
+    in  a: Logical,
+    in  b: Logical,
+    in  ci: Logical,
+    out o: Logical,
+    out co: Logical,
+}
+
+arch RTL for FullAdder {
+    place HalfAdder::RTL {
+        a <= a,
+        b <= b,
+        o => wire s,
+        c => wire cb,
+    }
+
+    place HalfAdder::RTL {
+        a <= s,
+        b <= ci,
+        o => o,
+        c => wire cc,
+    }
+
+    co <= cb or cc;
 }
