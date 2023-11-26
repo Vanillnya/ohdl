@@ -1,9 +1,10 @@
 use crate::{
     ast::{
-        item::{Entity, Item, ItemBase, Port, PortKind, Use},
+        item::{Arch, Entity, Item, ItemBase, Port, PortKind, Use},
         span::{Spanned, WithSpan},
     },
     lexer::TokenKind,
+    message::Message,
     spanned,
 };
 
@@ -17,7 +18,7 @@ impl<'s> Parser<'s> {
         let base = if self.eat_token(TokenKind::KwEntity)? {
             ItemBase::Entity(self.parse_entity()?)
         } else if self.eat_token(TokenKind::KwArch)? {
-            todo!()
+            ItemBase::Arch(self.parse_arch()?)
         } else if self.eat_token(TokenKind::KwUse)? {
             ItemBase::Use(self.parse_use()?)
         } else {
@@ -43,21 +44,23 @@ impl<'s> Parser<'s> {
         while self.kind()? != TokenKind::CloseCurly {
             let span_port = self.span_enter();
 
-            let kind = if self.eat_token(TokenKind::KwIn)? {
-                Spanned(PortKind::Input, self.prev_span())
-            } else if self.eat_token(TokenKind::KwOut)? {
-                Spanned(PortKind::Output, self.prev_span())
-            } else {
-                panic!("wtf")
+            let kind = match self.next()? {
+                Spanned(TokenKind::KwIn, s) => PortKind::Input.with_span(s),
+                Spanned(TokenKind::KwOut, s) => PortKind::Output.with_span(s),
+                token => self.messages.report(Message::unexpected_token(
+                    token.1,
+                    "'in' or 'out'",
+                    token.0,
+                ))?,
             };
 
             let name = self.ident()?;
             self.consume(TokenKind::Colon)?;
-            let r#type = spanned!(self { self.parse_type() })?;
+            let ty = spanned!(self { self.parse_type() })?;
 
             let span_port = self.span_leave(span_port);
 
-            ports.push(Port { kind, name, r#type }.with_span(span_port));
+            ports.push(Port { kind, name, ty }.with_span(span_port));
 
             if !self.eat_token(TokenKind::Comma)? {
                 break;
@@ -66,6 +69,27 @@ impl<'s> Parser<'s> {
 
         self.consume(TokenKind::CloseCurly)?;
         Ok(Entity { name, ports })
+    }
+
+    /// ### Parses an [`Arch`]
+    ///
+    /// Assumes that the `arch` keyword was already consumed.
+    pub fn parse_arch(&mut self) -> PResult<Arch<'s>> {
+        let name = self.ident()?;
+        self.consume(TokenKind::KwFor)?;
+        let ty = spanned!(self { self.parse_type() })?;
+
+        self.consume(TokenKind::OpenCurly)?;
+
+        let mut stmts = vec![];
+
+        while self.kind()? != TokenKind::CloseCurly {
+            stmts.push(spanned!(self { self.parse_stmt() })?);
+        }
+
+        self.consume(TokenKind::CloseCurly)?;
+
+        Ok(Arch { name, ty, stmts })
     }
 
     /// ### Parses an [`Use`]

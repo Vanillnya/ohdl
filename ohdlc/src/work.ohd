@@ -21,14 +21,14 @@ entity FullAdder {
 }
 
 arch RTL for FullAdder {
-    place HalfAdder::RTL {
+    place HalfAdder(RTL) {
         a <= a,
         b <= b,
         o => wire s,
         c => wire cb,
     }
 
-    place HalfAdder::RTL {
+    place HalfAdder(RTL) {
         a <= s,
         b <= ci,
         o => o,

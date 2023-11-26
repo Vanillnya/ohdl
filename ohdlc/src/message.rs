@@ -29,11 +29,16 @@ impl Message<'_> {
         }
     }
 
-    pub fn unexpected_token(span: impl Into<Span>, expected: TokenKind, got: TokenKind) -> Self {
+    pub fn unexpected_token(
+        span: impl Into<Span>,
+        expected: impl ToString,
+        got: TokenKind,
+    ) -> Self {
+        let expected = expected.to_string();
         Message {
             kind: ReportKind::Error,
             span: span.into(),
-            message: format!("Expected {expected:?}, but got {got:?}"),
+            message: format!("Expected {expected}, but got {got:?}"),
             label_message: "Wrong token kind here".to_string(),
         }
     }

@@ -21,10 +21,18 @@ pub enum TokenKind {
     KwFor,
     #[token("use")]
     KwUse,
+    #[token("place")]
+    KwPlace,
+    #[token("wire")]
+    KwWire,
 
     #[regex(r#"[_a-zA-Z][_a-zA-Z0-9]*"#)]
     Ident,
 
+    #[token("(")]
+    OpenParen,
+    #[token(")")]
+    CloseParen,
     #[token("{")]
     OpenCurly,
     #[token("}")]

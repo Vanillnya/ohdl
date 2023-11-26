@@ -11,6 +11,7 @@ use crate::{
 };
 
 pub mod item;
+pub mod stmt;
 pub mod ty;
 
 pub type PResult<T> = Result<T, ()>;
@@ -81,8 +82,11 @@ impl<'s> Parser<'s> {
         if token.0 == kind {
             Ok(token)
         } else {
-            self.messages
-                .report(Message::unexpected_token(token.1, kind, token.0))?
+            self.messages.report(Message::unexpected_token(
+                token.1,
+                format!("{kind:?}"),
+                token.0,
+            ))?
         }
     }
 
@@ -103,10 +107,6 @@ impl<'s> Parser<'s> {
 
     fn kind(&mut self) -> PResult<TokenKind> {
         Ok(self.current()?.0)
-    }
-
-    fn prev_span(&self) -> Span {
-        self.lexer.0[self.cursor - 1].1
     }
 }
 
