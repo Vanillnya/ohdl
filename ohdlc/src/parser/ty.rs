@@ -22,7 +22,7 @@ impl<'s> Parser<'s> {
 
     /// ### Parses a [`Type`]
     pub fn parse_type(&mut self) -> PResult<Type<'s>> {
-        let path = spanned!(self { self.parse_path() })?;
+        let path = spanned!(self { self.parse_path()? });
         Ok(Type { path })
     }
 }

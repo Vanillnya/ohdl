@@ -25,9 +25,9 @@ impl<'s> Parser<'s> {
     ///
     /// Assumes that the `place` keyword was already consumed.
     pub fn parse_stmt_place(&mut self) -> PResult<PlaceStmt<'s>> {
-        let entity_ty = spanned!(self { self.parse_type() })?;
+        let entity_ty = spanned!(self { self.parse_type()? });
         self.consume(TokenKind::OpenParen)?;
-        let arch_ty = spanned!(self { self.parse_type() })?;
+        let arch_ty = spanned!(self { self.parse_type()? });
         self.consume(TokenKind::CloseParen)?;
 
         self.consume(TokenKind::OpenCurly)?;
@@ -35,7 +35,7 @@ impl<'s> Parser<'s> {
         let mut links = vec![];
 
         while self.kind()? != TokenKind::CloseCurly {
-            links.push(spanned!(self { self.parse_place_link() })?);
+            links.push(spanned!(self { self.parse_place_link()? }));
 
             if !self.eat_token(TokenKind::Comma)? {
                 break;

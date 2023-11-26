@@ -13,23 +13,23 @@ use super::{PResult, Parser};
 impl<'s> Parser<'s> {
     /// ### Parses an [`Item`]
     pub fn parse_item(&mut self) -> PResult<Item<'s>> {
-        let span = self.span_enter();
+        let base = spanned!(self { self.parse_item_base()? });
 
-        let base = if self.eat_token(TokenKind::KwEntity)? {
-            ItemBase::Entity(self.parse_entity()?)
-        } else if self.eat_token(TokenKind::KwArch)? {
-            ItemBase::Arch(self.parse_arch()?)
-        } else if self.eat_token(TokenKind::KwUse)? {
-            ItemBase::Use(self.parse_use()?)
-        } else {
-            panic!("unknown ding")
-        };
+        Ok(Item { base })
+    }
 
-        let span = self.span_leave(span);
-
-        Ok(Item {
-            base: base.with_span(span),
-        })
+    /// ### Parses an [`ItemBase`]
+    fn parse_item_base(&mut self) -> PResult<ItemBase<'s>> {
+        match self.next()? {
+            Spanned(TokenKind::KwEntity, _) => Ok(ItemBase::Entity(self.parse_entity()?)),
+            Spanned(TokenKind::KwArch, _) => Ok(ItemBase::Arch(self.parse_arch()?)),
+            Spanned(TokenKind::KwUse, _) => Ok(ItemBase::Use(self.parse_use()?)),
+            token => self.messages.report(Message::unexpected_token(
+                token.1,
+                "'entity' or 'arch' or 'use'",
+                token.0,
+            ))?,
+        }
     }
 
     /// ### Parses an [`Entity`]
@@ -56,7 +56,7 @@ impl<'s> Parser<'s> {
 
             let name = self.ident()?;
             self.consume(TokenKind::Colon)?;
-            let ty = spanned!(self { self.parse_type() })?;
+            let ty = spanned!(self { self.parse_type()? });
 
             let span_port = self.span_leave(span_port);
 
@@ -77,14 +77,14 @@ impl<'s> Parser<'s> {
     pub fn parse_arch(&mut self) -> PResult<Arch<'s>> {
         let name = self.ident()?;
         self.consume(TokenKind::KwFor)?;
-        let ty = spanned!(self { self.parse_type() })?;
+        let ty = spanned!(self { self.parse_type()? });
 
         self.consume(TokenKind::OpenCurly)?;
 
         let mut stmts = vec![];
 
         while self.kind()? != TokenKind::CloseCurly {
-            stmts.push(spanned!(self { self.parse_stmt() })?);
+            stmts.push(spanned!(self { self.parse_stmt()? }));
         }
 
         self.consume(TokenKind::CloseCurly)?;

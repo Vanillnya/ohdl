@@ -118,7 +118,7 @@ macro_rules! spanned {
             let span = $self.span_enter();
             let val = { $($calc)* };
             let span = $self.span_leave(span);
-            val.map(|val| val.with_span(span))
+            val.with_span(span)
         }
     };
 }
