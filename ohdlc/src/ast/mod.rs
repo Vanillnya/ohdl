@@ -1,5 +1,6 @@
 use self::span::Spanned;
 
+pub mod expr;
 pub mod item;
 pub mod span;
 pub mod stmt;

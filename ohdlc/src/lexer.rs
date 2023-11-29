@@ -26,6 +26,13 @@ pub enum TokenKind {
     #[token("wire")]
     KwWire,
 
+    #[token("and")]
+    KwAnd,
+    #[token("xor")]
+    KwXor,
+    #[token("or")]
+    KwOr,
+
     #[regex(r#"[_a-zA-Z][_a-zA-Z0-9]*"#)]
     Ident,
 

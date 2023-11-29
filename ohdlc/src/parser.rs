@@ -10,6 +10,7 @@ use crate::{
     Source,
 };
 
+pub mod expr;
 pub mod item;
 pub mod stmt;
 pub mod ty;

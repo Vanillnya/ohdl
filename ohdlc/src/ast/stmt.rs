@@ -1,6 +1,4 @@
-use std::marker::PhantomData;
-
-use super::{item::PortKind, span::Spanned, ty::Type, Ident};
+use super::{expr::Expr, item::PortKind, span::Spanned, ty::Type, Ident};
 
 #[derive(Debug)]
 pub enum Stmt<'s> {
@@ -44,5 +42,6 @@ pub enum LinkDest<'s> {
 
 #[derive(Debug)]
 pub struct AssignStmt<'s> {
-    pub _phantom: PhantomData<&'s ()>,
+    pub assignee: Ident<'s>,
+    pub value: Expr<'s>,
 }

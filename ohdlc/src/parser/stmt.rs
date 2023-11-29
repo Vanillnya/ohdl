@@ -74,6 +74,13 @@ impl<'s> Parser<'s> {
 
     /// ### Parses an [`AssignStmt`]
     pub fn parse_stmt_assign(&mut self) -> PResult<AssignStmt<'s>> {
-        todo!()
+        let assignee = self.ident()?;
+        self.consume(TokenKind::LeftBigArrow)?;
+        let expr = self.parse_expr()?;
+        self.consume(TokenKind::Semicolon)?;
+        Ok(AssignStmt {
+            assignee,
+            value: expr,
+        })
     }
 }
