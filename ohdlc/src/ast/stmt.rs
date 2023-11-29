@@ -1,4 +1,9 @@
-use super::{expr::Expr, item::PortKind, span::Spanned, ty::Type, Ident};
+use super::{
+    expr::Expr,
+    span::{Span, Spanned},
+    ty::Type,
+    Ident,
+};
 
 #[derive(Debug)]
 pub enum Stmt<'s> {
@@ -28,14 +33,19 @@ pub struct PlaceStmt<'s> {
 /// ```
 #[derive(Debug)]
 pub struct PlaceLink<'s> {
-    /// Name of wire on entity side
     pub src: Ident<'s>,
-    pub kind: Spanned<PortKind>,
-    pub dst: LinkDest<'s>,
+    pub arrow_span: Span,
+    pub link: PlaceLinkInternal<'s>,
 }
 
 #[derive(Debug)]
-pub enum LinkDest<'s> {
+pub enum PlaceLinkInternal<'s> {
+    Ingoing(Spanned<Expr<'s>>),
+    Outgoing(Spanned<Connector<'s>>),
+}
+
+#[derive(Debug)]
+pub enum Connector<'s> {
     Ref(Ident<'s>),
     NewWire(Ident<'s>),
 }

@@ -1,8 +1,8 @@
 use crate::{
     ast::{
         item::PortKind,
-        span::{Spanned, WithSpan},
-        stmt::{AssignStmt, LinkDest, PlaceLink, PlaceStmt, Stmt},
+        span::Spanned,
+        stmt::{AssignStmt, Connector, PlaceLink, PlaceLinkInternal, PlaceStmt, Stmt},
     },
     lexer::TokenKind,
     message::Message,
@@ -54,22 +54,31 @@ impl<'s> Parser<'s> {
     /// ### Parses an [`PlaceLink`]
     fn parse_place_link(&mut self) -> PResult<PlaceLink<'s>> {
         let src = self.ident()?;
-        let kind = match self.next()? {
-            Spanned(TokenKind::LeftBigArrow, s) => PortKind::Input.with_span(s),
-            Spanned(TokenKind::RightBigArrow, s) => PortKind::Output.with_span(s),
+        let (kind, arrow_span) = match self.next()? {
+            Spanned(TokenKind::LeftBigArrow, s) => (PortKind::Input, s),
+            Spanned(TokenKind::RightBigArrow, s) => (PortKind::Output, s),
             token => {
                 self.messages
                     .report(Message::unexpected_token(token.1, "'<=' or '=>'", token.0))?
             }
         };
 
-        let dst = if self.eat_token(TokenKind::KwWire)? {
-            LinkDest::NewWire(self.ident()?)
-        } else {
-            LinkDest::Ref(self.ident()?)
+        let internal = match kind {
+            PortKind::Input => PlaceLinkInternal::Ingoing(spanned!(self { self.parse_expr()? })),
+            PortKind::Output => PlaceLinkInternal::Outgoing(spanned!(self {
+               if self.eat_token(TokenKind::KwWire)? {
+                   Connector::NewWire(self.ident()?)
+               } else {
+                   Connector::Ref(self.ident()?)
+               }
+            })),
         };
 
-        Ok(PlaceLink { src, kind, dst })
+        Ok(PlaceLink {
+            src,
+            arrow_span,
+            link: internal,
+        })
     }
 
     /// ### Parses an [`AssignStmt`]
