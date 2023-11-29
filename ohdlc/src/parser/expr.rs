@@ -8,11 +8,12 @@ use super::{PResult, Parser};
 impl<'s> Parser<'s> {
     /// ### Parses an [`Expr`]
     pub fn parse_expr(&mut self) -> PResult<Expr<'s>> {
-        let primary = self.parse_expr_primary()?;
-        self.parse_expr_(primary)
+        self.parse_expr_(0)
     }
 
-    fn parse_expr_(&mut self, left: Expr<'s>) -> PResult<Expr<'s>> {
+    fn parse_expr_(&mut self, precedence: usize) -> PResult<Expr<'s>> {
+        let left = self.parse_expr_atom()?;
+
         let op = match self.kind()? {
             TokenKind::KwAnd => Some(BinaryOperator::And),
             TokenKind::KwXor => Some(BinaryOperator::Xor),
@@ -21,7 +22,8 @@ impl<'s> Parser<'s> {
         };
         if let Some(op) = op {
             self.bump();
-            let right = self.parse_expr_primary()?;
+            let prec = precedence + 1; // when impl right-associative operators, for them it's just `precedence`;
+            let right = self.parse_expr_(prec)?;
             Ok(Expr::Binary {
                 left: Box::new(left),
                 right: Box::new(right),
@@ -32,7 +34,13 @@ impl<'s> Parser<'s> {
         }
     }
 
-    fn parse_expr_primary(&mut self) -> PResult<Expr<'s>> {
-        Ok(Expr::Primary(self.ident()?))
+    fn parse_expr_atom(&mut self) -> PResult<Expr<'s>> {
+        if self.eat_token(TokenKind::OpenParen)? {
+            let expr = self.parse_expr()?;
+            self.consume(TokenKind::CloseParen)?;
+            Ok(expr)
+        } else {
+            Ok(Expr::Primary(self.ident()?))
+        }
     }
 }
