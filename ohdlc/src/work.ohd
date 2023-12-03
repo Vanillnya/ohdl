@@ -1,5 +1,18 @@
 use std::Logical;
 
+record MyRecord {
+    a: Logical,
+    b: Logical,
+}
+
+enum MyEnum {
+    A,
+    B,
+    C,
+    D,
+    E,
+}
+
 entity HalfAdder {
     in  a: Logical,
     in  b: Logical,

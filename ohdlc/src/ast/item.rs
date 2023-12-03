@@ -12,9 +12,16 @@ pub struct Item<'s> {
 
 #[derive(Debug)]
 pub enum ItemBase<'s> {
+    Use(Use<'s>),
     Entity(Entity<'s>),
     Arch(Arch<'s>),
-    Use(Use<'s>),
+    Record(Record<'s>),
+    Enum(Enum<'s>),
+}
+
+#[derive(Debug)]
+pub struct Use<'s> {
+    pub path: Path<'s>,
 }
 
 #[derive(Debug)]
@@ -45,6 +52,19 @@ pub struct Arch<'s> {
 }
 
 #[derive(Debug)]
-pub struct Use<'s> {
-    pub path: Path<'s>,
+pub struct Record<'s> {
+    pub name: Ident<'s>,
+    pub fields: Vec<Spanned<Field<'s>>>,
+}
+
+#[derive(Debug)]
+pub struct Field<'s> {
+    pub name: Ident<'s>,
+    pub ty: Spanned<Type<'s>>,
+}
+
+#[derive(Debug)]
+pub struct Enum<'s> {
+    pub name: Ident<'s>,
+    pub variants: Vec<Ident<'s>>,
 }

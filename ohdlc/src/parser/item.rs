@@ -1,6 +1,6 @@
 use crate::{
     ast::{
-        item::{Arch, Entity, Item, ItemBase, Port, PortKind, Use},
+        item::{Arch, Entity, Enum, Field, Item, ItemBase, Port, PortKind, Record, Use},
         span::{Spanned, WithSpan},
     },
     lexer::TokenKind,
@@ -21,15 +21,26 @@ impl<'s> Parser<'s> {
     /// ### Parses an [`ItemBase`]
     fn parse_item_base(&mut self) -> PResult<ItemBase<'s>> {
         match self.next()? {
+            Spanned(TokenKind::KwUse, _) => Ok(ItemBase::Use(self.parse_use()?)),
             Spanned(TokenKind::KwEntity, _) => Ok(ItemBase::Entity(self.parse_entity()?)),
             Spanned(TokenKind::KwArch, _) => Ok(ItemBase::Arch(self.parse_arch()?)),
-            Spanned(TokenKind::KwUse, _) => Ok(ItemBase::Use(self.parse_use()?)),
+            Spanned(TokenKind::KwRecord, _) => Ok(ItemBase::Record(self.parse_record()?)),
+            Spanned(TokenKind::KwEnum, _) => Ok(ItemBase::Enum(self.parse_enum()?)),
             token => self.messages.report(Message::unexpected_token(
                 token.1,
                 "'entity' or 'arch' or 'use'",
                 token.0,
             ))?,
         }
+    }
+
+    /// ### Parses an [`Use`]
+    ///
+    /// Assumes that the `use` keyword was already consumed.
+    pub fn parse_use(&mut self) -> PResult<Use<'s>> {
+        let path = self.parse_path()?;
+        self.consume(TokenKind::Semicolon)?;
+        Ok(Use { path })
     }
 
     /// ### Parses an [`Entity`]
@@ -92,12 +103,55 @@ impl<'s> Parser<'s> {
         Ok(Arch { name, ty, stmts })
     }
 
-    /// ### Parses an [`Use`]
+    /// ### Parses a [`Record`]
     ///
-    /// Assumes that the `use` keyword was already consumed.
-    pub fn parse_use(&mut self) -> PResult<Use<'s>> {
-        let path = self.parse_path()?;
-        self.consume(TokenKind::Semicolon)?;
-        Ok(Use { path })
+    /// Assumes that the `record` keyword was already consumed.
+    pub fn parse_record(&mut self) -> PResult<Record<'s>> {
+        let name = self.ident()?;
+        self.consume(TokenKind::OpenCurly)?;
+
+        let mut fields = vec![];
+
+        while self.kind()? != TokenKind::CloseCurly {
+            let span_field = self.span_enter();
+
+            let name = self.ident()?;
+            self.consume(TokenKind::Colon)?;
+            let ty = spanned!(self { self.parse_type()? });
+
+            let span_field = self.span_leave(span_field);
+
+            fields.push(Field { name, ty }.with_span(span_field));
+
+            if !self.eat_token(TokenKind::Comma)? {
+                break;
+            }
+        }
+
+        self.consume(TokenKind::CloseCurly)?;
+        Ok(Record { name, fields })
+    }
+
+    /// ### Parses an [`Enum`]
+    ///
+    /// Assumes that the `enum` keyword was already consumed.
+    pub fn parse_enum(&mut self) -> PResult<Enum<'s>> {
+        let name = self.ident()?;
+        self.consume(TokenKind::OpenCurly)?;
+
+        let mut variants = vec![];
+
+        while self.kind()? != TokenKind::CloseCurly {
+            let variant = self.ident()?;
+
+            variants.push(variant);
+
+            if !self.eat_token(TokenKind::Comma)? {
+                break;
+            }
+        }
+
+        self.consume(TokenKind::CloseCurly)?;
+        Ok(Enum { name, variants })
     }
 }
