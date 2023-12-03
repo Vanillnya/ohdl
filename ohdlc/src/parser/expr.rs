@@ -5,6 +5,26 @@ use crate::{
 
 use super::{PResult, Parser};
 
+macro_rules! derivation {
+    (fn $name:ident match ($in:ty) for $out:ty {
+        $($from:path => $to:path),*$(,)?
+    }) => {
+        #[inline(always)]
+        fn $name(input: $in) -> Option<$out> {
+            #[allow(dead_code)]
+            fn _assert_outputs(x: $out) {
+                match x {
+                    $($to => ()),*,
+                };
+            }
+            match input {
+                $($from => Some($to)),*,
+                _ => None,
+            }
+        }
+    };
+}
+
 impl<'s> Parser<'s> {
     /// ### Parses an [`Expr`]
     pub fn parse_expr(&mut self) -> PResult<Expr<'s>> {
@@ -12,18 +32,18 @@ impl<'s> Parser<'s> {
     }
 
     fn parse_expr_(&mut self, precedence: usize) -> PResult<Expr<'s>> {
+        derivation!(fn bin_op match (TokenKind) for BinaryOperator {
+            TokenKind::KwAnd => BinaryOperator::And,
+            TokenKind::KwOr => BinaryOperator::Or,
+            TokenKind::KwNand => BinaryOperator::Nand,
+            TokenKind::KwNor => BinaryOperator::Nor,
+            TokenKind::KwXor => BinaryOperator::Xor,
+            TokenKind::KwXnor => BinaryOperator::Xnor,
+        });
+
         let left = self.parse_expr_unary()?;
 
-        let op = match self.kind()? {
-            TokenKind::KwAnd => Some(BinaryOperator::And),
-            TokenKind::KwOr => Some(BinaryOperator::Or),
-            TokenKind::KwNand => Some(BinaryOperator::Nand),
-            TokenKind::KwNor => Some(BinaryOperator::Nor),
-            TokenKind::KwXor => Some(BinaryOperator::Xor),
-            TokenKind::KwXnor => Some(BinaryOperator::Xnor),
-            _ => None,
-        };
-        if let Some(op) = op {
+        if let Some(op) = bin_op(self.kind()?) {
             self.bump();
             let prec = precedence + 1; // when impl right-associative operators, for them it's just `precedence`;
             let right = self.parse_expr_(prec)?;
@@ -38,11 +58,11 @@ impl<'s> Parser<'s> {
     }
 
     fn parse_expr_unary(&mut self) -> PResult<Expr<'s>> {
-        let op = match self.kind()? {
-            TokenKind::KwNot => Some(UnaryOperator::Not),
-            _ => None,
-        };
-        if let Some(op) = op {
+        derivation!(fn unary_op match (TokenKind) for UnaryOperator {
+            TokenKind::KwNot => UnaryOperator::Not,
+        });
+
+        if let Some(op) = unary_op(self.kind()?) {
             self.bump();
             let atom = self.parse_expr_atom()?;
             Ok(Expr::Unary {
