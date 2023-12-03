@@ -21,11 +21,11 @@ impl<'s> Parser<'s> {
     /// ### Parses an [`ItemBase`]
     fn parse_item_base(&mut self) -> PResult<ItemBase<'s>> {
         match self.next()? {
-            Spanned(TokenKind::KwUse, _) => Ok(ItemBase::Use(self.parse_use()?)),
-            Spanned(TokenKind::KwEntity, _) => Ok(ItemBase::Entity(self.parse_entity()?)),
-            Spanned(TokenKind::KwArch, _) => Ok(ItemBase::Arch(self.parse_arch()?)),
-            Spanned(TokenKind::KwRecord, _) => Ok(ItemBase::Record(self.parse_record()?)),
-            Spanned(TokenKind::KwEnum, _) => Ok(ItemBase::Enum(self.parse_enum()?)),
+            Spanned(TokenKind::KwUse, _) => self.parse_use().map(ItemBase::Use),
+            Spanned(TokenKind::KwEntity, _) => self.parse_entity().map(ItemBase::Entity),
+            Spanned(TokenKind::KwArch, _) => self.parse_arch().map(ItemBase::Arch),
+            Spanned(TokenKind::KwRecord, _) => self.parse_record().map(ItemBase::Record),
+            Spanned(TokenKind::KwEnum, _) => self.parse_enum().map(ItemBase::Enum),
             token => self.messages.report(Message::unexpected_token(
                 token.1,
                 "'entity' or 'arch' or 'use'",
