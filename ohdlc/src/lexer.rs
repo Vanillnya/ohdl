@@ -23,8 +23,8 @@ pub enum TokenKind {
     KwUse,
     #[token("place")]
     KwPlace,
-    #[token("wire")]
-    KwWire,
+    #[token("signal")]
+    KwSignal,
 
     #[token("and")]
     KwAnd,

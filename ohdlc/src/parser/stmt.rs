@@ -66,11 +66,11 @@ impl<'s> Parser<'s> {
         let internal = match kind {
             PortKind::Input => PlaceLinkInternal::Ingoing(spanned!(self { self.parse_expr()? })),
             PortKind::Output => PlaceLinkInternal::Outgoing(spanned!(self {
-               if self.eat_token(TokenKind::KwWire)? {
-                   Connector::NewWire(self.ident()?)
-               } else {
-                   Connector::Ref(self.ident()?)
-               }
+                if self.eat_token(TokenKind::KwSignal)? {
+                    Connector::NewSignal(self.ident()?)
+                } else {
+                    Connector::Ref(self.ident()?)
+                }
             })),
         };
 

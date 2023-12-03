@@ -24,15 +24,15 @@ arch RTL for FullAdder {
     place HalfAdder(RTL) {
         a <= a,
         b <= b,
-        o => wire s,
-        c => wire cb,
+        o => signal s,
+        c => signal cb,
     }
 
     place HalfAdder(RTL) {
         a <= s,
         b <= ci,
         o => o,
-        c => wire cc,
+        c => signal cc,
     }
 
     co <= cb or cc;

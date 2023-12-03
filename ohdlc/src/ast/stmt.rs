@@ -47,7 +47,7 @@ pub enum PlaceLinkInternal<'s> {
 #[derive(Debug)]
 pub enum Connector<'s> {
     Ref(Ident<'s>),
-    NewWire(Ident<'s>),
+    NewSignal(Ident<'s>),
 }
 
 #[derive(Debug)]
