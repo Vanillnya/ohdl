@@ -42,6 +42,8 @@ pub enum TokenKind {
     KwXor,
     #[token("xnor")]
     KwXnor,
+    #[token("not")]
+    KwNot,
 
     #[regex(r#"[_a-zA-Z][_a-zA-Z0-9]*"#)]
     Ident,

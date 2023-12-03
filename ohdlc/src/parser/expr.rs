@@ -1,5 +1,5 @@
 use crate::{
-    ast::expr::{BinaryOperator, Expr},
+    ast::expr::{BinaryOperator, Expr, UnaryOperator},
     lexer::TokenKind,
 };
 
@@ -12,7 +12,7 @@ impl<'s> Parser<'s> {
     }
 
     fn parse_expr_(&mut self, precedence: usize) -> PResult<Expr<'s>> {
-        let left = self.parse_expr_atom()?;
+        let left = self.parse_expr_unary()?;
 
         let op = match self.kind()? {
             TokenKind::KwAnd => Some(BinaryOperator::And),
@@ -34,6 +34,23 @@ impl<'s> Parser<'s> {
             })
         } else {
             Ok(left)
+        }
+    }
+
+    fn parse_expr_unary(&mut self) -> PResult<Expr<'s>> {
+        let op = match self.kind()? {
+            TokenKind::KwNot => Some(UnaryOperator::Not),
+            _ => None,
+        };
+        if let Some(op) = op {
+            self.bump();
+            let atom = self.parse_expr_atom()?;
+            Ok(Expr::Unary {
+                operator: op,
+                value: Box::new(atom),
+            })
+        } else {
+            self.parse_expr_atom()
         }
     }
 

@@ -7,6 +7,10 @@ pub enum Expr<'s> {
         right: Box<Expr<'s>>,
         operator: BinaryOperator,
     },
+    Unary {
+        operator: UnaryOperator,
+        value: Box<Expr<'s>>,
+    },
     Primary(Ident<'s>),
 }
 
@@ -18,4 +22,9 @@ pub enum BinaryOperator {
     Nor,
     Xor,
     Xnor,
+}
+
+#[derive(Debug)]
+pub enum UnaryOperator {
+    Not,
 }
