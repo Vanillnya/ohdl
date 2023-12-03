@@ -16,8 +16,11 @@ impl<'s> Parser<'s> {
 
         let op = match self.kind()? {
             TokenKind::KwAnd => Some(BinaryOperator::And),
-            TokenKind::KwXor => Some(BinaryOperator::Xor),
             TokenKind::KwOr => Some(BinaryOperator::Or),
+            TokenKind::KwNand => Some(BinaryOperator::Nand),
+            TokenKind::KwNor => Some(BinaryOperator::Nor),
+            TokenKind::KwXor => Some(BinaryOperator::Xor),
+            TokenKind::KwXnor => Some(BinaryOperator::Xnor),
             _ => None,
         };
         if let Some(op) = op {

@@ -13,6 +13,9 @@ pub enum Expr<'s> {
 #[derive(Debug)]
 pub enum BinaryOperator {
     And,
-    Xor,
     Or,
+    Nand,
+    Nor,
+    Xor,
+    Xnor,
 }

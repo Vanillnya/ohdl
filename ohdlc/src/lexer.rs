@@ -32,10 +32,16 @@ pub enum TokenKind {
 
     #[token("and")]
     KwAnd,
-    #[token("xor")]
-    KwXor,
     #[token("or")]
     KwOr,
+    #[token("nand")]
+    KwNand,
+    #[token("nor")]
+    KwNor,
+    #[token("xor")]
+    KwXor,
+    #[token("xnor")]
+    KwXnor,
 
     #[regex(r#"[_a-zA-Z][_a-zA-Z0-9]*"#)]
     Ident,
