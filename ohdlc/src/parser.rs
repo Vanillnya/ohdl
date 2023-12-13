@@ -1,10 +1,7 @@
 use std::ops::Range;
 
 use crate::{
-    ast::{
-        span::{Span, Spanned},
-        Ident,
-    },
+    ast::{Ident, Span, Spanned},
     lexer::{Lexer, TokenKind},
     message::{Message, Messages},
     Source,
@@ -115,7 +112,7 @@ impl<'s> Parser<'s> {
 macro_rules! spanned {
     ($self:ident { $($calc:tt)* }) => {
         {
-            use crate::ast::span::WithSpan;
+            use crate::ast::WithSpan;
             let span = $self.span_enter();
             let val = { $($calc)* };
             let span = $self.span_leave(span);

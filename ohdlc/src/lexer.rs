@@ -2,7 +2,7 @@ use ariadne::ReportKind;
 use logos::Logos;
 
 use crate::{
-    ast::span::{Spanned, WithSpan},
+    ast::{Spanned, WithSpan},
     message::{Message, Messages},
 };
 

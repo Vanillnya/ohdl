@@ -1,8 +1,6 @@
 use crate::{
     ast::{
-        item::PortKind,
-        span::Spanned,
-        stmt::{AssignStmt, Connector, PlaceLink, PlaceLinkInternal, PlaceStmt, Stmt},
+        AssignStmt, Connector, PlaceLink, PlaceLinkInternal, PlaceStmt, PortKind, Spanned, Stmt,
     },
     lexer::TokenKind,
     message::Message,

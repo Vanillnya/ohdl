@@ -1,5 +1,5 @@
 use crate::{
-    ast::ty::{Path, PathSegment, Type},
+    ast::{Path, PathSegment, Type},
     lexer::TokenKind,
     spanned,
 };

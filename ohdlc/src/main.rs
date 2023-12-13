@@ -1,13 +1,15 @@
 use std::ops::Range;
 
 use ariadne::{Label, Report, ReportKind};
-use ast::span::Span;
+use ast::Span;
+use bumpalo::Bump;
 use message::Messages;
 use parser::Parser;
 
 use crate::lexer::Lexer;
 
 mod ast;
+pub mod hir;
 mod lexer;
 mod message;
 mod parser;
@@ -25,9 +27,12 @@ fn main() -> Result<(), ()> {
     println!("[STAGE] Parser");
     let mut parser = Parser::new(source, lexer);
 
-    for _ in 0..5 {
-        println!("{:#?}", parser.parse_item());
-    }
+    println!("{:#?}", parser.parse_item());
+    let record = parser.parse_item();
+    println!("{:#?}", record);
+    println!("{:#?}", parser.parse_item());
+    println!("{:#?}", parser.parse_item());
+    println!("{:#?}", parser.parse_item());
 
     for msg in parser.messages.0 {
         print_report(
@@ -38,6 +43,9 @@ fn main() -> Result<(), ()> {
             msg.label_message,
         );
     }
+
+    let mut hir_arena = Bump::new();
+    hir::Item::represent(&mut hir_arena, record?);
 
     Ok(())
 }

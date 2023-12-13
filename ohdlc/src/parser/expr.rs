@@ -1,5 +1,5 @@
 use crate::{
-    ast::expr::{BinaryOperator, Expr, UnaryOperator},
+    ast::{BinaryOperator, Expr, UnaryOperator},
     lexer::TokenKind,
 };
 
