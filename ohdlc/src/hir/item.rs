@@ -41,8 +41,10 @@ pub struct Record<'h> {
 
 impl<'h> hir::Record<'h> {
     pub fn represent(arena: &'h mut Bump, record: ast::Record) -> Self {
-        let fields = Vec::with_capacity_in(record.fields.len(), arena);
-        for field in record.fields {}
+        let mut fields = Vec::with_capacity_in(record.fields.len(), arena);
+        for field in record.fields {
+            fields.push(hir::Field::represent(field.0));
+        }
         Self {
             name: hir::Ident::intern(record.name.0),
             fields,
@@ -50,4 +52,14 @@ impl<'h> hir::Record<'h> {
     }
 }
 
-pub struct Field {}
+pub struct Field {
+    pub name: hir::Ident,
+}
+
+impl hir::Field {
+    pub fn represent(field: ast::Field) -> Self {
+        Self {
+            name: hir::Ident::intern(field.name.0),
+        }
+    }
+}
