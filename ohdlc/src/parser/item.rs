@@ -1,9 +1,8 @@
 use crate::{
-    ast::{
-        Arch, Entity, Enum, Field, Item, ItemBase, Port, PortKind, Record, Spanned, Use, WithSpan,
-    },
+    ast::{Arch, Entity, Enum, Field, Item, ItemBase, Port, PortKind, Record, Use},
     lexer::TokenKind,
     message::Message,
+    span::{Spanned, WithSpan},
     spanned,
 };
 

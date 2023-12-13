@@ -1,6 +1,6 @@
 use ariadne::ReportKind;
 
-use crate::{ast::Span, lexer::TokenKind, parser::PResult};
+use crate::{lexer::TokenKind, parser::PResult, span::Span};
 
 pub struct Messages<'s>(pub Vec<Message<'s>>);
 

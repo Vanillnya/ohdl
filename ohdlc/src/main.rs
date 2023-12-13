@@ -1,10 +1,10 @@
 use std::ops::Range;
 
 use ariadne::{Label, Report, ReportKind};
-use ast::Span;
 use bumpalo::Bump;
 use message::Messages;
 use parser::Parser;
+use span::Span;
 
 use crate::lexer::Lexer;
 
@@ -13,6 +13,7 @@ pub mod hir;
 mod lexer;
 mod message;
 mod parser;
+pub mod span;
 
 pub struct Source<'s>(pub String, pub &'s str);
 

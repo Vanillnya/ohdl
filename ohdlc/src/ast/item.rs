@@ -1,5 +1,6 @@
+use crate::span::Spanned;
+
 use super::{
-    span::Spanned,
     stmt::Stmt,
     ty::{Path, Type},
     Ident,

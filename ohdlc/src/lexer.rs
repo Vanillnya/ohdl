@@ -2,8 +2,8 @@ use ariadne::ReportKind;
 use logos::Logos;
 
 use crate::{
-    ast::{Spanned, WithSpan},
     message::{Message, Messages},
+    span::{Spanned, WithSpan},
 };
 
 #[derive(Logos, Debug, PartialEq, Eq, Clone, Copy)]

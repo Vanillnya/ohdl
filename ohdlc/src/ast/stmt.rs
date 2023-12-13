@@ -1,9 +1,5 @@
-use super::{
-    expr::Expr,
-    span::{Span, Spanned},
-    ty::Type,
-    Ident,
-};
+use super::{expr::Expr, ty::Type, Ident};
+use crate::span::{Span, Spanned};
 
 #[derive(Debug)]
 pub enum Stmt<'s> {

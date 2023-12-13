@@ -1,4 +1,6 @@
-use super::{span::Spanned, Ident};
+use crate::span::Spanned;
+
+use super::Ident;
 
 #[derive(Debug)]
 pub struct Path<'s>(pub Vec<PathSegment<'s>>);
