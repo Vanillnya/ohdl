@@ -3,14 +3,17 @@ use bumpalo::Bump;
 
 use crate::ast;
 use crate::hir;
+use crate::span::Span;
 
 pub struct Item<'h> {
+    pub base_span: Span,
     pub base: hir::ItemBase<'h>,
 }
 
 impl<'h> hir::Item<'h> {
     pub fn represent(arena: &'h mut Bump, item: ast::Item) -> Self {
         Self {
+            base_span: item.base.1,
             base: hir::ItemBase::represent(arena, item.base.0),
         }
     }
@@ -32,6 +35,7 @@ impl<'h> hir::ItemBase<'h> {
 }
 
 pub struct Record<'h> {
+    pub name: hir::Ident,
     pub fields: Vec<'h, hir::Field>,
 }
 
@@ -39,7 +43,10 @@ impl<'h> hir::Record<'h> {
     pub fn represent(arena: &'h mut Bump, record: ast::Record) -> Self {
         let fields = Vec::with_capacity_in(record.fields.len(), arena);
         for field in record.fields {}
-        Self { fields }
+        Self {
+            name: hir::Ident::intern(record.name.0),
+            fields,
+        }
     }
 }
 
