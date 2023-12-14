@@ -1,21 +1,28 @@
 mod item;
-use std::cell::RefCell;
+use std::fmt::Debug;
+
+pub mod lowering;
 
 pub use item::*;
-use lasso::{Rodeo, Spur};
-use once_cell::unsync::Lazy;
+use lasso::{Spur, ThreadedRodeo};
+use once_cell::sync::Lazy;
 
-thread_local! {
-    static IDENT_POOL: Lazy<RefCell<Rodeo>> = Lazy::new(|| {
-        RefCell::new(Rodeo::default())
-    });
-}
+static IDENT_POOL: Lazy<ThreadedRodeo> = Lazy::new(ThreadedRodeo::default);
+
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(transparent)]
 pub struct Ident(Spur);
 impl Ident {
     pub fn intern(val: impl AsRef<str>) -> Self {
-        let spur = IDENT_POOL.with(|pool| pool.borrow_mut().get_or_intern(val));
-        Self(spur)
+        Self(IDENT_POOL.get_or_intern(val))
+    }
+
+    pub fn get(&self) -> &str {
+        IDENT_POOL.resolve(&self.0)
+    }
+}
+impl Debug for Ident {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "`{}`", self.get())
     }
 }
