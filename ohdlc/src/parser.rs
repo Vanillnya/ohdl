@@ -19,16 +19,16 @@ pub struct Parser<'s> {
     pub source: Source<'s>,
     lexer: Lexer,
     cursor: usize,
-    pub messages: Messages<'s>,
+    pub messages: &'static Messages,
 }
 
 impl<'s> Parser<'s> {
-    pub fn new(source: Source<'s>, lexer: Lexer) -> Self {
+    pub fn new(messages: &'static Messages, source: Source<'s>, lexer: Lexer) -> Self {
         Self {
             source,
             lexer,
             cursor: 0,
-            messages: Messages(Vec::new()),
+            messages,
         }
     }
 
@@ -36,9 +36,12 @@ impl<'s> Parser<'s> {
     fn current(&mut self) -> PResult<Spanned<TokenKind>> {
         match self.lexer.0.get(self.cursor) {
             Some(val) => Ok(*val),
-            None => self.messages.report(Message::unexpected_end(
-                self.source.1.len()..self.source.1.len(),
-            ))?,
+            None => {
+                self.messages.report(Message::unexpected_end(
+                    self.source.1.len()..self.source.1.len(),
+                ));
+                Err(())
+            }
         }
     }
 
@@ -85,7 +88,8 @@ impl<'s> Parser<'s> {
                 token.1,
                 format!("{kind:?}"),
                 token.0,
-            ))?
+            ));
+            Err(())
         }
     }
 

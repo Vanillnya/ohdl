@@ -1,7 +1,7 @@
 use std::ops::Range;
 
 use ariadne::{Label, Report, ReportKind};
-use message::Messages;
+use message::{Message, Messages};
 use parser::Parser;
 use span::Span;
 
@@ -14,18 +14,23 @@ mod message;
 mod parser;
 pub mod span;
 
+#[derive(Clone)]
 pub struct Source<'s>(pub String, pub &'s str);
 
 fn main() -> Result<(), ()> {
+    let messages = Box::leak(Box::new(Messages::new()));
+
     let source = Source("work.ohd".to_owned(), include_str!("work.ohd"));
 
     println!("[STAGE] Lexer");
 
-    let lexer = Lexer::new(&source.1);
-    let lexer = finish_stage(&source, lexer)?;
+    let lexer = Lexer::new(messages, &source.1);
+    report_messages(&source, messages);
+    let lexer = lexer?;
 
     println!("[STAGE] Parser");
-    let mut parser = Parser::new(source, lexer);
+
+    let mut parser = Parser::new(messages, source.clone(), lexer);
 
     let hir = HIR::new();
 
@@ -35,29 +40,20 @@ fn main() -> Result<(), ()> {
         println!("{hir_item:#?}");
     }
 
-    for msg in parser.messages.0 {
-        print_report(
-            &parser.source,
-            msg.kind,
-            msg.span,
-            msg.message,
-            msg.label_message,
-        );
-    }
+    report_messages(&source, messages);
 
     Ok(())
 }
 
-fn finish_stage<T>(source: &Source, input: Result<T, Messages>) -> Result<T, ()> {
-    input.map_err(|msgs| {
-        for msg in msgs.0 {
-            print_report(source, msg.kind, msg.span, msg.message, msg.label_message);
-        }
-        ()
-    })
+fn report_messages(source: &Source, messages: &'static Messages) {
+    messages.drain(|msg| report_to_stdout(source, msg));
 }
 
-pub fn print_report(
+fn report_to_stdout(source: &Source, msg: Message) {
+    print_report(source, msg.kind, msg.span, msg.message, msg.label_message);
+}
+
+fn print_report(
     source: &Source,
     report_kind: ReportKind,
     span: Span,

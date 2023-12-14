@@ -24,11 +24,14 @@ impl<'s> Parser<'s> {
             Spanned(TokenKind::KwArch, _) => self.parse_arch().map(ItemBase::Arch),
             Spanned(TokenKind::KwRecord, _) => self.parse_record().map(ItemBase::Record),
             Spanned(TokenKind::KwEnum, _) => self.parse_enum().map(ItemBase::Enum),
-            token => self.messages.report(Message::unexpected_token(
-                token.1,
-                "'entity' or 'arch' or 'use'",
-                token.0,
-            ))?,
+            token => {
+                self.messages.report(Message::unexpected_token(
+                    token.1,
+                    "'entity' or 'arch' or 'use'",
+                    token.0,
+                ));
+                Err(())
+            }
         }
     }
 
@@ -56,11 +59,14 @@ impl<'s> Parser<'s> {
             let kind = match self.next()? {
                 Spanned(TokenKind::KwIn, s) => PortKind::Input.with_span(s),
                 Spanned(TokenKind::KwOut, s) => PortKind::Output.with_span(s),
-                token => self.messages.report(Message::unexpected_token(
-                    token.1,
-                    "'in' or 'out'",
-                    token.0,
-                ))?,
+                token => {
+                    self.messages.report(Message::unexpected_token(
+                        token.1,
+                        "'in' or 'out'",
+                        token.0,
+                    ));
+                    return Err(());
+                }
             };
 
             let name = self.ident()?;

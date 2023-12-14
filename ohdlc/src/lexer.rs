@@ -73,28 +73,31 @@ pub enum TokenKind {
 pub struct Lexer(pub Vec<Spanned<TokenKind>>);
 
 impl Lexer {
-    pub fn new(text: &str) -> Result<Self, Messages> {
+    pub fn new(messages: &'static Messages, text: &str) -> Result<Self, ()> {
         let tokenizer = TokenKind::lexer(text);
 
+        let mut poisoned = false;
         let mut tokens = Vec::new();
-        let mut messages = Messages(Vec::new());
 
         for token in tokenizer.spanned() {
             match token {
                 (Ok(token), span) => tokens.push(token.with_span(span)),
-                (Err(_), span) => messages.0.push(Message {
-                    kind: ReportKind::Error,
-                    span: span.into(),
-                    message: "Unknown Token".to_string(),
-                    label_message: "Whatever this is here".to_string(),
-                }),
+                (Err(_), span) => {
+                    messages.report(Message {
+                        kind: ReportKind::Error,
+                        span: span.into(),
+                        message: "Unknown Token".to_string(),
+                        label_message: "Whatever this is here".to_string(),
+                    });
+                    poisoned = true;
+                }
             }
         }
 
-        if messages.0.is_empty() {
-            Ok(Self(tokens))
+        if poisoned {
+            Err(())
         } else {
-            Err(messages)
+            Ok(Self(tokens))
         }
     }
 }

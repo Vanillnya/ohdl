@@ -1,25 +1,41 @@
+use std::sync::Mutex;
+
 use ariadne::ReportKind;
 
-use crate::{lexer::TokenKind, parser::PResult, span::Span};
+use crate::{lexer::TokenKind, span::Span};
 
-pub struct Messages<'s>(pub Vec<Message<'s>>);
+pub struct Messages {
+    messages: Mutex<Vec<Message>>,
+}
 
-impl<'s> Messages<'s> {
-    #[inline(always)]
-    pub fn report<T>(&mut self, message: Message<'s>) -> PResult<T> {
-        self.0.push(message);
-        Err(())
+impl Messages {
+    pub fn new() -> Self {
+        Self {
+            messages: Mutex::new(Vec::new()),
+        }
+    }
+
+    #[inline]
+    pub fn report(&self, message: Message) {
+        self.messages.lock().unwrap().push(message);
+    }
+
+    pub fn drain<F>(&self, f: F)
+    where
+        F: Fn(Message),
+    {
+        self.messages.lock().unwrap().drain(..).for_each(f)
     }
 }
 
-pub struct Message<'s> {
-    pub kind: ReportKind<'s>,
+pub struct Message {
+    pub kind: ReportKind<'static>,
     pub span: Span,
     pub message: String,
     pub label_message: String,
 }
 
-impl Message<'_> {
+impl Message {
     pub fn unexpected_end(span: impl Into<Span>) -> Self {
         Self {
             kind: ReportKind::Error,

@@ -56,7 +56,8 @@ impl<'s> Parser<'s> {
             Spanned(TokenKind::RightBigArrow, s) => (PortKind::Output, s),
             token => {
                 self.messages
-                    .report(Message::unexpected_token(token.1, "'<=' or '=>'", token.0))?
+                    .report(Message::unexpected_token(token.1, "'<=' or '=>'", token.0));
+                return Err(());
             }
         };
 
