@@ -11,7 +11,7 @@ pub struct Item<'h> {
 }
 
 impl<'h> hir::Item<'h> {
-    pub fn represent(arena: &'h mut Bump, item: ast::Item) -> Self {
+    pub fn represent(arena: &'h Bump, item: ast::Item) -> Self {
         Self {
             base_span: item.base.1,
             base: hir::ItemBase::represent(arena, item.base.0),
@@ -24,7 +24,7 @@ pub enum ItemBase<'h> {
 }
 
 impl<'h> hir::ItemBase<'h> {
-    pub fn represent(arena: &'h mut Bump, base: ast::ItemBase) -> Self {
+    pub fn represent(arena: &'h Bump, base: ast::ItemBase) -> Self {
         match base {
             ast::ItemBase::Record(record) => {
                 hir::ItemBase::Record(hir::Record::represent(arena, record))
@@ -40,10 +40,10 @@ pub struct Record<'h> {
 }
 
 impl<'h> hir::Record<'h> {
-    pub fn represent(arena: &'h mut Bump, record: ast::Record) -> Self {
+    pub fn represent(arena: &'h Bump, record: ast::Record) -> Self {
         let mut fields = Vec::with_capacity_in(record.fields.len(), arena);
         for field in record.fields {
-            fields.push(hir::Field::represent(field.0));
+            fields.push(hir::Field::represent(arena, field.0));
         }
         Self {
             name: hir::Ident::intern(record.name.0),
@@ -57,7 +57,7 @@ pub struct Field {
 }
 
 impl hir::Field {
-    pub fn represent(field: ast::Field) -> Self {
+    pub fn represent(_arena: &Bump, field: ast::Field) -> Self {
         Self {
             name: hir::Ident::intern(field.name.0),
         }
