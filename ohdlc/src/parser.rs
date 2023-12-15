@@ -1,10 +1,12 @@
 use std::ops::Range;
 
+use bumpalo::Bump;
+
 use crate::{
-    ast::Ident,
     lexer::{Lexer, TokenKind},
     message::{Message, Messages},
-    span::{Span, Spanned},
+    span::{Span, Spanned, WithSpan},
+    symbol::{Ident, Symbol},
     Source,
 };
 
@@ -15,16 +17,23 @@ pub mod ty;
 
 pub type PResult<T> = Result<T, ()>;
 
-pub struct Parser<'s> {
+pub struct Parser<'s, 'a> {
+    pub arena: &'a Bump,
     pub source: Source<'s>,
     lexer: Lexer,
     cursor: usize,
     pub messages: &'static Messages,
 }
 
-impl<'s> Parser<'s> {
-    pub fn new(messages: &'static Messages, source: Source<'s>, lexer: Lexer) -> Self {
+impl<'s, 'a> Parser<'s, 'a> {
+    pub fn new(
+        arena: &'a Bump,
+        messages: &'static Messages,
+        source: Source<'s>,
+        lexer: Lexer,
+    ) -> Self {
         Self {
+            arena,
             source,
             lexer,
             cursor: 0,
@@ -93,9 +102,9 @@ impl<'s> Parser<'s> {
         }
     }
 
-    fn ident(&mut self) -> PResult<Ident<'s>> {
+    fn ident(&mut self) -> PResult<Ident> {
         self.consume(TokenKind::Ident)
-            .map(|Spanned(_, span)| Spanned(self.slice(span), span))
+            .map(|Spanned(_, span)| Symbol::intern(self.slice(span)).with_span(span))
     }
 
     fn eat_token(&mut self, kind: TokenKind) -> PResult<bool> {

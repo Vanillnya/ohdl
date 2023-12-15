@@ -8,16 +8,16 @@ use crate::{
 
 use super::{PResult, Parser};
 
-impl<'s> Parser<'s> {
+impl<'s, 'a> Parser<'s, 'a> {
     /// ### Parses an [`Item`]
-    pub fn parse_item(&mut self) -> PResult<Item<'s>> {
+    pub fn parse_item(&mut self) -> PResult<Item<'a>> {
         let base = spanned!(self { self.parse_item_base()? });
 
         Ok(Item { base })
     }
 
     /// ### Parses an [`ItemBase`]
-    fn parse_item_base(&mut self) -> PResult<ItemBase<'s>> {
+    fn parse_item_base(&mut self) -> PResult<ItemBase<'a>> {
         match self.next()? {
             Spanned(TokenKind::KwUse, _) => self.parse_use().map(ItemBase::Use),
             Spanned(TokenKind::KwEntity, _) => self.parse_entity().map(ItemBase::Entity),
@@ -38,7 +38,7 @@ impl<'s> Parser<'s> {
     /// ### Parses an [`Use`]
     ///
     /// Assumes that the `use` keyword was already consumed.
-    pub fn parse_use(&mut self) -> PResult<Use<'s>> {
+    pub fn parse_use(&mut self) -> PResult<Use> {
         let path = self.parse_path()?;
         self.consume(TokenKind::Semicolon)?;
         Ok(Use { path })
@@ -47,7 +47,7 @@ impl<'s> Parser<'s> {
     /// ### Parses an [`Entity`]
     ///
     /// Assumes that the `entity` keyword was already consumed.
-    pub fn parse_entity(&mut self) -> PResult<Entity<'s>> {
+    pub fn parse_entity(&mut self) -> PResult<Entity> {
         let name = self.ident()?;
         self.consume(TokenKind::OpenCurly)?;
 
@@ -89,7 +89,7 @@ impl<'s> Parser<'s> {
     /// ### Parses an [`Arch`]
     ///
     /// Assumes that the `arch` keyword was already consumed.
-    pub fn parse_arch(&mut self) -> PResult<Arch<'s>> {
+    pub fn parse_arch(&mut self) -> PResult<Arch<'a>> {
         let name = self.ident()?;
         self.consume(TokenKind::KwFor)?;
         let ty = spanned!(self { self.parse_type()? });
@@ -110,7 +110,7 @@ impl<'s> Parser<'s> {
     /// ### Parses a [`Record`]
     ///
     /// Assumes that the `record` keyword was already consumed.
-    pub fn parse_record(&mut self) -> PResult<Record<'s>> {
+    pub fn parse_record(&mut self) -> PResult<Record> {
         let name = self.ident()?;
         self.consume(TokenKind::OpenCurly)?;
 
@@ -139,7 +139,7 @@ impl<'s> Parser<'s> {
     /// ### Parses an [`Enum`]
     ///
     /// Assumes that the `enum` keyword was already consumed.
-    pub fn parse_enum(&mut self) -> PResult<Enum<'s>> {
+    pub fn parse_enum(&mut self) -> PResult<Enum> {
         let name = self.ident()?;
         self.consume(TokenKind::OpenCurly)?;
 

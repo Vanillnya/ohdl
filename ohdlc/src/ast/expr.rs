@@ -1,17 +1,17 @@
-use super::Ident;
+use crate::symbol::Ident;
 
 #[derive(Debug)]
-pub enum Expr<'s> {
+pub enum Expr<'a> {
     Binary {
-        left: Box<Expr<'s>>,
-        right: Box<Expr<'s>>,
+        left: &'a Expr<'a>,
+        right: &'a Expr<'a>,
         operator: BinaryOperator,
     },
     Unary {
         operator: UnaryOperator,
-        value: Box<Expr<'s>>,
+        value: &'a Expr<'a>,
     },
-    Primary(Ident<'s>),
+    Primary(Ident),
 }
 
 #[derive(Debug)]

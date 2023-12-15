@@ -1,26 +1,29 @@
-use super::{expr::Expr, ty::Type, Ident};
-use crate::span::{Span, Spanned};
+use super::{expr::Expr, ty::Type};
+use crate::{
+    span::{Span, Spanned},
+    symbol::Ident,
+};
 
 #[derive(Debug)]
-pub enum Stmt<'s> {
+pub enum Stmt<'a> {
     /// ```ohdl
     /// place MyEntity::MyArch {
     ///     i <= i,
     ///     o => o,
     /// }
     /// ```
-    Place(PlaceStmt<'s>),
+    Place(PlaceStmt<'a>),
     /// ```ohdl
     /// val <= a or b;
     /// ```
-    Assign(AssignStmt<'s>),
+    Assign(AssignStmt<'a>),
 }
 
 #[derive(Debug)]
-pub struct PlaceStmt<'s> {
-    pub entity_ty: Spanned<Type<'s>>,
-    pub arch_ty: Spanned<Type<'s>>,
-    pub links: Vec<Spanned<PlaceLink<'s>>>,
+pub struct PlaceStmt<'a> {
+    pub entity_ty: Spanned<Type>,
+    pub arch_ty: Spanned<Type>,
+    pub links: Vec<Spanned<PlaceLink<'a>>>,
 }
 
 /// ```ohdl
@@ -28,26 +31,26 @@ pub struct PlaceStmt<'s> {
 /// src => wire dst;
 /// ```
 #[derive(Debug)]
-pub struct PlaceLink<'s> {
-    pub src: Ident<'s>,
+pub struct PlaceLink<'a> {
+    pub src: Ident,
     pub arrow_span: Span,
-    pub link: PlaceLinkInternal<'s>,
+    pub link: PlaceLinkInternal<'a>,
 }
 
 #[derive(Debug)]
-pub enum PlaceLinkInternal<'s> {
-    Ingoing(Spanned<Expr<'s>>),
-    Outgoing(Spanned<Connector<'s>>),
+pub enum PlaceLinkInternal<'a> {
+    Ingoing(Spanned<Expr<'a>>),
+    Outgoing(Spanned<Connector>),
 }
 
 #[derive(Debug)]
-pub enum Connector<'s> {
-    Ref(Ident<'s>),
-    NewSignal(Ident<'s>),
+pub enum Connector {
+    Ref(Ident),
+    NewSignal(Ident),
 }
 
 #[derive(Debug)]
-pub struct AssignStmt<'s> {
-    pub assignee: Ident<'s>,
-    pub value: Expr<'s>,
+pub struct AssignStmt<'a> {
+    pub assignee: Ident,
+    pub value: Expr<'a>,
 }

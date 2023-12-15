@@ -24,7 +24,7 @@ impl Into<Range<usize>> for Span {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub struct Spanned<T>(pub T, pub Span);
 
 impl<T> Deref for Spanned<T> {
@@ -38,6 +38,15 @@ impl<T> Deref for Spanned<T> {
 impl<T> DerefMut for Spanned<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
+    }
+}
+
+impl<T> Debug for Spanned<T>
+where
+    T: Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}:{}..{}", self.0, self.1 .0, self.1 .1)
     }
 }
 

@@ -1,6 +1,7 @@
 use std::{collections::HashMap, ops::Range};
 
 use ariadne::{Label, Report, ReportKind};
+use bumpalo::Bump;
 use message::{Message, Messages};
 use parser::Parser;
 use span::Span;
@@ -16,6 +17,7 @@ mod message;
 mod parser;
 pub mod rir;
 pub mod span;
+pub mod symbol;
 
 #[derive(Clone)]
 pub struct Source<'s>(pub String, pub &'s str);
@@ -33,7 +35,9 @@ fn main() -> Result<(), ()> {
 
     println!("[STAGE] Parser");
 
-    let mut parser = Parser::new(messages, source.clone(), lexer);
+    let parser_arena = Bump::new();
+
+    let mut parser = Parser::new(&parser_arena, messages, source.clone(), lexer);
 
     let hir = RIR::new();
 

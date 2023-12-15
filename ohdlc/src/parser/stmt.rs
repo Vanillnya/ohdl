@@ -8,9 +8,9 @@ use crate::{
 
 use super::{PResult, Parser};
 
-impl<'s> Parser<'s> {
+impl<'s, 'a> Parser<'s, 'a> {
     /// ### Parses an [`Stmt`]
-    pub fn parse_stmt(&mut self) -> PResult<Stmt<'s>> {
+    pub fn parse_stmt(&mut self) -> PResult<Stmt<'a>> {
         if self.eat_token(TokenKind::KwPlace)? {
             Ok(Stmt::Place(self.parse_stmt_place()?))
         } else {
@@ -21,7 +21,7 @@ impl<'s> Parser<'s> {
     /// ### Parses an [`PlaceStmt`]
     ///
     /// Assumes that the `place` keyword was already consumed.
-    pub fn parse_stmt_place(&mut self) -> PResult<PlaceStmt<'s>> {
+    pub fn parse_stmt_place(&mut self) -> PResult<PlaceStmt<'a>> {
         let entity_ty = spanned!(self { self.parse_type()? });
         self.consume(TokenKind::OpenParen)?;
         let arch_ty = spanned!(self { self.parse_type()? });
@@ -49,7 +49,7 @@ impl<'s> Parser<'s> {
     }
 
     /// ### Parses an [`PlaceLink`]
-    fn parse_place_link(&mut self) -> PResult<PlaceLink<'s>> {
+    fn parse_place_link(&mut self) -> PResult<PlaceLink<'a>> {
         let src = self.ident()?;
         let (kind, arrow_span) = match self.next()? {
             Spanned(TokenKind::LeftBigArrow, s) => (PortKind::Input, s),
@@ -80,7 +80,7 @@ impl<'s> Parser<'s> {
     }
 
     /// ### Parses an [`AssignStmt`]
-    pub fn parse_stmt_assign(&mut self) -> PResult<AssignStmt<'s>> {
+    pub fn parse_stmt_assign(&mut self) -> PResult<AssignStmt<'a>> {
         let assignee = self.ident()?;
         self.consume(TokenKind::LeftBigArrow)?;
         let expr = self.parse_expr()?;

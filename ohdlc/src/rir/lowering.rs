@@ -20,41 +20,41 @@ impl RIR {
             }
             ast::ItemBase::Entity(e) => {
                 scope.entries.insert(
-                    Ident::intern(e.name.0),
+                    e.name.0,
                     Decl {
                         base_span: item.base.1,
                         base: DeclKind::Entity,
-                        name: Ident::intern(e.name.0),
+                        name: e.name,
                     },
                 );
             }
             ast::ItemBase::Arch(a) => {
                 scope.entries.insert(
-                    Ident::intern(a.name.0),
+                    a.name.0,
                     Decl {
                         base_span: item.base.1,
                         base: DeclKind::Arch,
-                        name: Ident::intern(a.name.0),
+                        name: a.name,
                     },
                 );
             }
             ast::ItemBase::Record(r) => {
                 scope.entries.insert(
-                    Ident::intern(r.name.0),
+                    r.name.0,
                     Decl {
                         base_span: item.base.1,
                         base: DeclKind::Record,
-                        name: Ident::intern(r.name.0),
+                        name: r.name,
                     },
                 );
             }
             ast::ItemBase::Enum(e) => {
                 scope.entries.insert(
-                    Ident::intern(e.name.0),
+                    e.name.0,
                     Decl {
                         base_span: item.base.1,
                         base: DeclKind::Enum,
-                        name: Ident::intern(e.name.0),
+                        name: e.name,
                     },
                 );
             }

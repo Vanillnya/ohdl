@@ -1,9 +1,11 @@
 use std::collections::HashMap;
 
-use super::{Decl, Ident};
+use crate::symbol::Symbol;
+
+use super::Decl;
 
 #[derive(Debug)]
 pub struct Scope<'r> {
     pub parent: Option<&'r Scope<'r>>,
-    pub entries: HashMap<Ident, Decl>,
+    pub entries: HashMap<Symbol, Decl>,
 }

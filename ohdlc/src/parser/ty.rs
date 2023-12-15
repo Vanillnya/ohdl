@@ -6,9 +6,9 @@ use crate::{
 
 use super::{PResult, Parser};
 
-impl<'s> Parser<'s> {
+impl<'s, 'a> Parser<'s, 'a> {
     /// ### Parses a [`Path`]
-    pub fn parse_path(&mut self) -> PResult<Path<'s>> {
+    pub fn parse_path(&mut self) -> PResult<Path> {
         let mut segments = vec![];
         segments.push(PathSegment(self.ident()?));
 
@@ -21,7 +21,7 @@ impl<'s> Parser<'s> {
     }
 
     /// ### Parses a [`Type`]
-    pub fn parse_type(&mut self) -> PResult<Type<'s>> {
+    pub fn parse_type(&mut self) -> PResult<Type> {
         let path = spanned!(self { self.parse_path()? });
         Ok(Type { path })
     }

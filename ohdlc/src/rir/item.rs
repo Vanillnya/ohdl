@@ -1,6 +1,4 @@
-use crate::span::Span;
-
-use super::Ident;
+use crate::{span::Span, symbol::Ident};
 
 #[derive(Debug)]
 pub struct Decl {

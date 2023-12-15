@@ -1,14 +1,12 @@
-use crate::span::Spanned;
-
-use super::Ident;
+use crate::{span::Spanned, symbol::Ident};
 
 #[derive(Debug)]
-pub struct Path<'s>(pub Vec<PathSegment<'s>>);
+pub struct Path(pub Vec<PathSegment>);
 
 #[derive(Debug)]
-pub struct PathSegment<'s>(pub Ident<'s>);
+pub struct PathSegment(pub Ident);
 
 #[derive(Debug)]
-pub struct Type<'s> {
-    pub path: Spanned<Path<'s>>,
+pub struct Type {
+    pub path: Spanned<Path>,
 }

@@ -25,13 +25,13 @@ macro_rules! derivation {
     };
 }
 
-impl<'s> Parser<'s> {
+impl<'s, 'a> Parser<'s, 'a> {
     /// ### Parses an [`Expr`]
-    pub fn parse_expr(&mut self) -> PResult<Expr<'s>> {
+    pub fn parse_expr(&mut self) -> PResult<Expr<'a>> {
         self.parse_expr_(0)
     }
 
-    fn parse_expr_(&mut self, precedence: usize) -> PResult<Expr<'s>> {
+    fn parse_expr_(&mut self, precedence: usize) -> PResult<Expr<'a>> {
         derivation!(fn bin_op match (TokenKind) for BinaryOperator {
             TokenKind::KwAnd => BinaryOperator::And,
             TokenKind::KwOr => BinaryOperator::Or,
@@ -48,8 +48,8 @@ impl<'s> Parser<'s> {
             let prec = precedence + 1; // when impl right-associative operators, for them it's just `precedence`;
             let right = self.parse_expr_(prec)?;
             Ok(Expr::Binary {
-                left: Box::new(left),
-                right: Box::new(right),
+                left: self.arena.alloc(left),
+                right: self.arena.alloc(right),
                 operator: op,
             })
         } else {
@@ -57,7 +57,7 @@ impl<'s> Parser<'s> {
         }
     }
 
-    fn parse_expr_unary(&mut self) -> PResult<Expr<'s>> {
+    fn parse_expr_unary(&mut self) -> PResult<Expr<'a>> {
         derivation!(fn unary_op match (TokenKind) for UnaryOperator {
             TokenKind::KwNot => UnaryOperator::Not,
         });
@@ -67,14 +67,14 @@ impl<'s> Parser<'s> {
             let atom = self.parse_expr_atom()?;
             Ok(Expr::Unary {
                 operator: op,
-                value: Box::new(atom),
+                value: self.arena.alloc(atom),
             })
         } else {
             self.parse_expr_atom()
         }
     }
 
-    fn parse_expr_atom(&mut self) -> PResult<Expr<'s>> {
+    fn parse_expr_atom(&mut self) -> PResult<Expr<'a>> {
         if self.eat_token(TokenKind::OpenParen)? {
             let expr = self.parse_expr()?;
             self.consume(TokenKind::CloseParen)?;
