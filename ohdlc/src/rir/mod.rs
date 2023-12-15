@@ -1,9 +1,12 @@
-mod item;
 use std::fmt::Debug;
 
 pub mod lowering;
 
+mod item;
 pub use item::*;
+mod scope;
+pub use scope::*;
+
 use lasso::{Spur, ThreadedRodeo};
 use once_cell::sync::Lazy;
 

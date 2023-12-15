@@ -1,11 +1,14 @@
-use std::ops::Range;
+use std::{collections::HashMap, ops::Range};
 
 use ariadne::{Label, Report, ReportKind};
 use message::{Message, Messages};
 use parser::Parser;
 use span::Span;
 
-use crate::{lexer::Lexer, rir::lowering::RIR};
+use crate::{
+    lexer::Lexer,
+    rir::{lowering::RIR, Scope},
+};
 
 mod ast;
 mod lexer;
@@ -34,11 +37,15 @@ fn main() -> Result<(), ()> {
 
     let hir = RIR::new();
 
-    for _ in 0..5 {
+    let mut scope = Scope {
+        parent: None,
+        entries: HashMap::new(),
+    };
+    for _ in 0..7 {
         let item = parser.parse_item()?;
-        let hir_item = hir.lower_item(item);
-        println!("{hir_item:#?}");
+        hir.lower_item(&mut scope, item);
     }
+    println!("{scope:#?}");
 
     report_messages(&source, messages);
 
