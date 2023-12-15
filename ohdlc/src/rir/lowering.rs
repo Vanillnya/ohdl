@@ -4,11 +4,11 @@ use crate::ast;
 
 use super::*;
 
-pub struct HIR {
+pub struct RIR {
     arena: Bump,
 }
 
-impl HIR {
+impl RIR {
     pub fn new() -> Self {
         Self { arena: Bump::new() }
     }

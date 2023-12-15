@@ -5,13 +5,13 @@ use message::{Message, Messages};
 use parser::Parser;
 use span::Span;
 
-use crate::{hir::lowering::HIR, lexer::Lexer};
+use crate::{lexer::Lexer, rir::lowering::RIR};
 
 mod ast;
-pub mod hir;
 mod lexer;
 mod message;
 mod parser;
+pub mod rir;
 pub mod span;
 
 #[derive(Clone)]
@@ -32,7 +32,7 @@ fn main() -> Result<(), ()> {
 
     let mut parser = Parser::new(messages, source.clone(), lexer);
 
-    let hir = HIR::new();
+    let hir = RIR::new();
 
     for _ in 0..5 {
         let item = parser.parse_item()?;
