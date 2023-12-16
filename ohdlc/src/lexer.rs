@@ -1,4 +1,3 @@
-use ariadne::ReportKind;
 use logos::Logos;
 
 use crate::{
@@ -83,12 +82,7 @@ impl Lexer {
             match token {
                 (Ok(token), span) => tokens.push(token.with_span(span)),
                 (Err(_), span) => {
-                    messages.report(Message {
-                        kind: ReportKind::Error,
-                        span: span.into(),
-                        message: "Unknown Token".to_string(),
-                        label_message: "Whatever this is here".to_string(),
-                    });
+                    messages.report(Message::unknown_token(span));
                     poisoned = true;
                 }
             }

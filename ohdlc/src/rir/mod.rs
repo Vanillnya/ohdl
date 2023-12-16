@@ -1,6 +1,6 @@
 pub mod lowering;
 
-mod item;
-pub use item::*;
+mod entry;
+pub use entry::*;
 mod scope;
 pub use scope::*;

@@ -1,63 +1,61 @@
+use std::collections::hash_map;
+
 use bumpalo::Bump;
 
-use crate::ast;
+use crate::{
+    ast,
+    message::{Message, Messages},
+};
 
 use super::*;
 
+pub type LResult<T> = Result<T, ()>;
+pub type EntryIdx = usize;
+
 pub struct RIR {
     arena: Bump,
+    entry_pool: Vec<Entry>,
+    messages: &'static Messages,
 }
 
 impl RIR {
-    pub fn new() -> Self {
-        Self { arena: Bump::new() }
+    pub fn new(messages: &'static Messages) -> Self {
+        Self {
+            arena: Bump::new(),
+            entry_pool: Vec::new(),
+            messages,
+        }
     }
 
-    pub fn lower_item(&self, scope: &mut Scope, item: ast::Item) {
-        match item.base.0 {
+    pub fn lower_item(&mut self, scope: &mut Scope, item: ast::Item) -> LResult<()> {
+        let (name, kind) = match item.base.0 {
             ast::ItemBase::Use(u) => {
                 println!("Using {u:?}");
+                return Ok(());
             }
-            ast::ItemBase::Entity(e) => {
-                scope.entries.insert(
-                    e.name.0,
-                    Decl {
-                        base_span: item.base.1,
-                        base: DeclKind::Entity,
-                        name: e.name,
-                    },
-                );
-            }
+            ast::ItemBase::Entity(e) => (e.name, EntryKind::Entity),
             ast::ItemBase::Arch(a) => {
-                scope.entries.insert(
-                    a.name.0,
-                    Decl {
-                        base_span: item.base.1,
-                        base: DeclKind::Arch,
-                        name: a.name,
-                    },
-                );
+                println!("Arch {a:?}");
+                return Ok(());
             }
-            ast::ItemBase::Record(r) => {
-                scope.entries.insert(
-                    r.name.0,
-                    Decl {
-                        base_span: item.base.1,
-                        base: DeclKind::Record,
-                        name: r.name,
-                    },
-                );
-            }
-            ast::ItemBase::Enum(e) => {
-                scope.entries.insert(
-                    e.name.0,
-                    Decl {
-                        base_span: item.base.1,
-                        base: DeclKind::Enum,
-                        name: e.name,
-                    },
-                );
-            }
+            ast::ItemBase::Record(r) => (r.name, EntryKind::Record),
+            ast::ItemBase::Enum(e) => (e.name, EntryKind::Enum),
         };
+        match scope.entries.entry(name.0) {
+            hash_map::Entry::Occupied(entry) => {
+                let original = &self.entry_pool[*entry.get()];
+                self.messages.report(Message::already_in_scope(
+                    name.0.get(),
+                    name.1,
+                    original.name.1,
+                ))
+            }
+            hash_map::Entry::Vacant(entry) => {
+                let idx = self.entry_pool.len();
+                self.entry_pool.push(Entry { kind, name });
+                entry.insert(idx);
+            }
+        }
+        Ok(())
     }
 }

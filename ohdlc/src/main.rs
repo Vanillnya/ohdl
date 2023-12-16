@@ -1,10 +1,9 @@
-use std::{collections::HashMap, ops::Range};
+use std::collections::HashMap;
 
-use ariadne::{Label, Report, ReportKind};
+use ariadne::{Label, Report};
 use bumpalo::Bump;
-use message::{Message, Messages};
+use message::Messages;
 use parser::Parser;
-use span::Span;
 
 use crate::{
     lexer::Lexer,
@@ -39,7 +38,7 @@ fn main() -> Result<(), ()> {
 
     let mut parser = Parser::new(&parser_arena, messages, source.clone(), lexer);
 
-    let hir = RIR::new();
+    let mut hir = RIR::new(messages);
 
     let mut scope = Scope {
         parent: None,
@@ -47,7 +46,7 @@ fn main() -> Result<(), ()> {
     };
     for _ in 0..7 {
         let item = parser.parse_item()?;
-        hir.lower_item(&mut scope, item);
+        let _ = hir.lower_item(&mut scope, item);
     }
     println!("{scope:#?}");
 
@@ -57,30 +56,19 @@ fn main() -> Result<(), ()> {
 }
 
 fn report_messages(source: &Source, messages: &'static Messages) {
-    messages.drain(|msg| report_to_stdout(source, msg));
-}
+    messages.drain(|msg| {
+        let filename = source.0.as_str();
 
-fn report_to_stdout(source: &Source, msg: Message) {
-    print_report(source, msg.kind, msg.span, msg.message, msg.label_message);
-}
+        let report =
+            Report::build(msg.kind, filename, msg.location.0)
+                .with_message(msg.message)
+                .with_labels(msg.labels.into_iter().map(|label| {
+                    Label::new((filename, label.span.into())).with_message(label.message)
+                }))
+                .finish();
 
-fn print_report(
-    source: &Source,
-    report_kind: ReportKind,
-    span: Span,
-    message: impl Into<String>,
-    label_message: impl Into<String>,
-) {
-    let span: Range<usize> = span.into();
-
-    let filename = source.0.as_str();
-
-    let report = Report::build(report_kind, filename, span.start)
-        .with_message(message.into())
-        .with_label(Label::new((filename, span.into())).with_message(label_message.into()))
-        .finish();
-
-    report
-        .eprint((filename, ariadne::Source::from(source.1)))
-        .unwrap();
+        report
+            .eprint((filename, ariadne::Source::from(source.1)))
+            .unwrap();
+    });
 }
