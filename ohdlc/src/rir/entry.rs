@@ -1,13 +1,13 @@
 use crate::symbol::Ident;
 
 #[derive(Debug)]
-pub struct Entry {
-    pub kind: EntryKind,
+pub struct Declaration {
+    pub kind: DeclKind,
     pub name: Ident,
 }
 
 #[derive(Debug)]
-pub enum EntryKind {
+pub enum DeclKind {
     Module, // TODO: parsing
     Entity,
     Record,
