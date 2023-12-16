@@ -46,7 +46,8 @@ where
     T: Debug,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:?}:{}..{}", self.0, self.1 .0, self.1 .1)
+        self.0.fmt(f)?;
+        write!(f, ":{}..{}", self.1 .0, self.1 .1)
     }
 }
 
