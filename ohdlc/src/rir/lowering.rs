@@ -28,11 +28,30 @@ impl RIR {
         }
     }
 
-    pub fn lower_item(&mut self, scope: &mut Scope, item: ast::Item) -> LResult<()> {
+    pub fn lower_item(&mut self, scope: &mut Scope<'_>, item: ast::Item) -> LResult<()> {
         match item.base.0 {
             ast::ItemBase::Use(u) => {
-                println!("Using {u:?}");
-                return Ok(());
+                let imported_entry = u.path.0.last().unwrap().0;
+                match scope.entries.entry(imported_entry.0) {
+                    hash_map::Entry::Occupied(entry) => {
+                        let original = match entry.get() {
+                            Entry::Declared(idx) => (self.decl_pool[*idx]).name,
+                            Entry::Imported(import) => import.segments.last().unwrap().0,
+                        };
+                        self.messages.report(Message::already_in_scope(
+                            imported_entry.0.get(),
+                            imported_entry.1,
+                            original.1,
+                        ));
+                        return Err(()); // TODO: is this what we want?
+                    }
+                    hash_map::Entry::Vacant(entry) => {
+                        entry.insert(Entry::Imported(Import {
+                            segments: self.arena.alloc_slice_fill_iter(u.path.0.into_iter()),
+                        }));
+                    }
+                }
+                Ok(())
             }
             ast::ItemBase::Entity(e) => self.declare_entry(scope, e.name, DeclKind::Entity),
             ast::ItemBase::Arch(a) => {
