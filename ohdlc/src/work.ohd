@@ -25,11 +25,7 @@ arch RTL for HalfAdder {
     c <= a and b;
 }
 
-use a::b::c::D;
-
-entity HalfAdder {
-
-}
+use a::b::c::HalfAdder;
 
 entity FullAdder {
     in  a: Logical,

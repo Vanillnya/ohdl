@@ -46,9 +46,7 @@ impl RIR {
                         return Err(()); // TODO: is this what we want?
                     }
                     hash_map::Entry::Vacant(entry) => {
-                        entry.insert(Entry::Imported(Import {
-                            segments: self.arena.alloc_slice_fill_iter(u.path.0.into_iter()),
-                        }));
+                        entry.insert(Entry::Imported(Import { segments: u.path.0 }));
                     }
                 }
                 Ok(())

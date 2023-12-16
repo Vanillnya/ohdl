@@ -5,18 +5,18 @@ use crate::{ast, symbol::Symbol};
 use super::lowering::EntryIdx;
 
 #[derive(Debug)]
-pub struct Import<'r> {
-    pub segments: &'r [ast::PathSegment],
+pub struct Import {
+    pub segments: Vec<ast::PathSegment>,
 }
 
 #[derive(Debug)]
-pub enum Entry<'r> {
+pub enum Entry {
     Declared(EntryIdx),
-    Imported(Import<'r>),
+    Imported(Import),
 }
 
 #[derive(Debug)]
 pub struct Scope<'r> {
     pub parent: Option<&'r Scope<'r>>,
-    pub entries: HashMap<Symbol, Entry<'r>>,
+    pub entries: HashMap<Symbol, Entry>,
 }
