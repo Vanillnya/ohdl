@@ -9,7 +9,7 @@ pub struct Messages {
 }
 
 impl Messages {
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             messages: Mutex::new(Vec::new()),
         }

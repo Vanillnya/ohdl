@@ -1,8 +1,9 @@
 use logos::Logos;
 
 use crate::{
-    message::{Message, Messages},
+    message::Message,
     span::{Spanned, WithSpan},
+    MESSAGES,
 };
 
 #[derive(Logos, Debug, PartialEq, Eq, Clone, Copy)]
@@ -72,7 +73,7 @@ pub enum TokenKind {
 pub struct Lexer(pub Vec<Spanned<TokenKind>>);
 
 impl Lexer {
-    pub fn new(messages: &'static Messages, text: &str) -> Result<Self, ()> {
+    pub fn new(text: &str) -> Result<Self, ()> {
         let tokenizer = TokenKind::lexer(text);
 
         let mut poisoned = false;
@@ -82,7 +83,7 @@ impl Lexer {
             match token {
                 (Ok(token), span) => tokens.push(token.with_span(span)),
                 (Err(_), span) => {
-                    messages.report(Message::unknown_token(span));
+                    MESSAGES.report(Message::unknown_token(span));
                     poisoned = true;
                 }
             }

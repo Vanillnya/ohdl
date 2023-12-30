@@ -4,10 +4,10 @@ use bumpalo::Bump;
 
 use crate::{
     lexer::{Lexer, TokenKind},
-    message::{Message, Messages},
+    message::Message,
     span::{Span, Spanned, WithSpan},
     symbol::{Ident, Symbol},
-    Source,
+    Source, MESSAGES,
 };
 
 pub mod expr;
@@ -22,22 +22,15 @@ pub struct Parser<'s, 'a> {
     pub source: Source<'s>,
     lexer: Lexer,
     cursor: usize,
-    pub messages: &'static Messages,
 }
 
 impl<'s, 'a> Parser<'s, 'a> {
-    pub fn new(
-        arena: &'a Bump,
-        messages: &'static Messages,
-        source: Source<'s>,
-        lexer: Lexer,
-    ) -> Self {
+    pub fn new(arena: &'a Bump, source: Source<'s>, lexer: Lexer) -> Self {
         Self {
             arena,
             source,
             lexer,
             cursor: 0,
-            messages,
         }
     }
 
@@ -46,7 +39,7 @@ impl<'s, 'a> Parser<'s, 'a> {
         match self.lexer.0.get(self.cursor) {
             Some(val) => Ok(*val),
             None => {
-                self.messages.report(Message::unexpected_end(
+                MESSAGES.report(Message::unexpected_end(
                     self.source.1.len()..self.source.1.len(),
                 ));
                 Err(())
@@ -93,7 +86,7 @@ impl<'s, 'a> Parser<'s, 'a> {
         if token.0 == kind {
             Ok(token)
         } else {
-            self.messages.report(Message::unexpected_token(
+            MESSAGES.report(Message::unexpected_token(
                 token.1,
                 format!("{kind:?}"),
                 token.0,

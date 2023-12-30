@@ -16,25 +16,25 @@ mod parser;
 mod span;
 mod symbol;
 
+static MESSAGES: Messages = Messages::new();
+
 #[derive(Clone)]
 pub struct Source<'s>(pub String, pub &'s str);
 
 fn main() -> Result<(), ()> {
-    let messages = Box::leak(Box::new(Messages::new()));
-
     let source = Source("work.ohd".to_owned(), include_str!("work.ohd"));
 
     println!("[STAGE] Lexer");
 
-    let lexer = Lexer::new(messages, &source.1);
-    report_messages(&source, messages);
+    let lexer = Lexer::new(&source.1);
+    report_messages(&source);
     let lexer = lexer?;
 
     println!("[STAGE] Parser");
 
     let parser_arena = Bump::new();
 
-    let mut parser = Parser::new(&parser_arena, messages, source.clone(), lexer);
+    let mut parser = Parser::new(&parser_arena, source.clone(), lexer);
 
     let hir_arena = Bump::new();
     let mut hir = HIR::new();
@@ -51,13 +51,13 @@ fn main() -> Result<(), ()> {
 
     println!("{hir:#?}");
 
-    report_messages(&source, messages);
+    report_messages(&source);
 
     Ok(())
 }
 
-fn report_messages(source: &Source, messages: &'static Messages) {
-    messages.drain(|msg| {
+fn report_messages(source: &Source) {
+    MESSAGES.drain(|msg| {
         let filename = source.0.as_str();
 
         let report =

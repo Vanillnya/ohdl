@@ -3,7 +3,7 @@ use crate::{
     lexer::TokenKind,
     message::Message,
     span::Spanned,
-    spanned,
+    spanned, MESSAGES,
 };
 
 use super::{PResult, Parser};
@@ -55,8 +55,7 @@ impl<'s, 'a> Parser<'s, 'a> {
             Spanned(TokenKind::LeftBigArrow, s) => (PortKind::Input, s),
             Spanned(TokenKind::RightBigArrow, s) => (PortKind::Output, s),
             token => {
-                self.messages
-                    .report(Message::unexpected_token(token.1, "'<=' or '=>'", token.0));
+                MESSAGES.report(Message::unexpected_token(token.1, "'<=' or '=>'", token.0));
                 return Err(());
             }
         };
