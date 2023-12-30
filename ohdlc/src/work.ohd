@@ -5,7 +5,7 @@ record MyRecord {
     b: Logical,
 }
 
-enum MyEnum {
+enum MyRecord {
     A,
     B,
     C,
