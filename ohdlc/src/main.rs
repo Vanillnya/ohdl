@@ -1,22 +1,20 @@
-use std::collections::HashMap;
-
 use ariadne::{Label, Report};
 use bumpalo::Bump;
 use message::Messages;
 use parser::Parser;
 
 use crate::{
+    hir::{stages::rough::RoughLowering, HIR},
     lexer::Lexer,
-    rir::{lowering::RIR, Scope},
 };
 
 mod ast;
+mod hir;
 mod lexer;
 mod message;
 mod parser;
-pub mod rir;
-pub mod span;
-pub mod symbol;
+mod span;
+mod symbol;
 
 #[derive(Clone)]
 pub struct Source<'s>(pub String, pub &'s str);
@@ -38,17 +36,20 @@ fn main() -> Result<(), ()> {
 
     let mut parser = Parser::new(&parser_arena, messages, source.clone(), lexer);
 
-    let mut hir = RIR::new(messages);
-
-    let mut scope = Scope {
-        parent: None,
-        entries: HashMap::new(),
+    let hir_arena = Bump::new();
+    let mut hir = HIR::new();
+    let mut rough = RoughLowering {
+        arena: &hir_arena,
+        hir: &mut hir,
     };
-    for _ in 0..7 {
-        let item = parser.parse_item()?;
-        let _ = hir.lower_item(&mut scope, item);
-    }
-    println!("{scope:#?}");
+
+    rough.lower(&[
+        parser.parse_item().unwrap(),
+        parser.parse_item().unwrap(),
+        parser.parse_item().unwrap(),
+    ]);
+
+    println!("{hir:#?}");
 
     report_messages(&source, messages);
 
