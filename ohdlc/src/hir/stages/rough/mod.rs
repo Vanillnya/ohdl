@@ -3,14 +3,16 @@ use std::collections::{hash_map::Entry, HashMap};
 use bumpalo::Bump;
 
 use crate::{
-    ast::{self, Item},
+    ast::{self},
     hir::{
+        modules::Module,
         resolving::{Resolvable, ResolvingScope},
         types::{Entity, Enum, Record, Type, Variant},
         HIR,
     },
     message::Message,
     span::Spanned,
+    symbol::Ident,
     MESSAGES,
 };
 
@@ -20,18 +22,19 @@ pub struct RoughLowering<'a, 'hir> {
 }
 
 impl<'hir> RoughLowering<'_, 'hir> {
-    pub fn lower(&mut self, root: &[Spanned<Item>]) {
-        let root_scope = self.hir.tr_scopes.insert(ResolvingScope {
+    pub fn lower(&mut self, root: &[Spanned<ast::Item>]) {
+        let root_scope = self.hir.resolving_scopes.insert(ResolvingScope {
             parent: None,
             entries: HashMap::new(),
         });
         for item in root {
-            self.lower_item(item, root_scope);
+            self.lower_item(root_scope, item);
         }
     }
 
-    pub fn lower_item(&mut self, item: &Item, scope: usize) {
+    pub fn lower_item(&mut self, scope: usize, item: &ast::Item) {
         match item {
+            ast::Item::Module(m) => self.lower_mod(scope, m),
             ast::Item::Entity(e) => self.introduce_type(scope, |type_id| {
                 Type::Entity(Entity {
                     type_id,
@@ -57,6 +60,20 @@ impl<'hir> RoughLowering<'_, 'hir> {
         }
     }
 
+    pub fn lower_mod(&mut self, scope: usize, m: &ast::Module) {
+        let sub_scope = self.hir.resolving_scopes.sub_scope(scope);
+
+        let module = self.hir.modules.insert(Module {
+            name: m.name,
+            scope: sub_scope,
+        });
+        self.introduce(scope, m.name, Resolvable::Module(module));
+
+        for i in &m.items {
+            self.lower_item(sub_scope, i);
+        }
+    }
+
     fn introduce_type<F>(&mut self, scope: usize, f: F)
     where
         F: FnOnce(usize) -> Type<'hir>,
@@ -66,14 +83,18 @@ impl<'hir> RoughLowering<'_, 'hir> {
         entry.insert(f(id));
 
         let name = self.hir.types[id].name();
-        match self.hir.tr_scopes[scope].entries.entry(name.0) {
+        self.introduce(scope, name, Resolvable::Type(id));
+    }
+
+    fn introduce(&mut self, scope: usize, name: Ident, resolvable: Resolvable) {
+        match self.hir.resolving_scopes[scope].entries.entry(name.0) {
             Entry::Vacant(entry) => {
-                entry.insert(Resolvable::Type(id));
+                entry.insert(resolvable);
             }
             Entry::Occupied(entry) => {
                 let original = match *entry.get() {
                     Resolvable::Type(t) => self.hir.types[t].name(),
-                    Resolvable::Module(_) => todo!(),
+                    Resolvable::Module(m) => self.hir.modules[m].name,
                 };
                 MESSAGES.report(Message::already_in_scope(name.0.get(), name.1, original.1));
             }

@@ -2,6 +2,6 @@
 
 ### Goals
 
-- Create empty types
+- Create modules and empty types
 - Roughly outline scopes
-- Keep note of types & imports in scopes
+- Keep note of types and modules in scopes
