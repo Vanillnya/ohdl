@@ -19,12 +19,12 @@ pub struct RoughLowering<'a, 'hir> {
 }
 
 impl<'hir> RoughLowering<'_, 'hir> {
-    pub fn lower(&mut self, items: &[ast::Item]) {
+    pub fn lower_module(&mut self, module: &ast::Module) {
         let root_scope = self.hir.tr_scopes.insert(TypeResolvingScope {
             parent: None,
             types: HashMap::new(),
         });
-        for item in items {
+        for item in &module.items {
             self.lower_item(item, root_scope);
         }
     }

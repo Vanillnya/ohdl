@@ -12,6 +12,7 @@ use crate::{
 
 pub mod expr;
 pub mod item;
+pub mod module;
 pub mod stmt;
 pub mod ty;
 
@@ -32,6 +33,11 @@ impl<'s, 'a> Parser<'s, 'a> {
             lexer,
             cursor: 0,
         }
+    }
+
+    #[inline(always)]
+    fn has_next(&self) -> bool {
+        self.lexer.0.len() > self.cursor
     }
 
     #[inline(always)]
