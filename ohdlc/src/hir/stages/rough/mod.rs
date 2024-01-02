@@ -6,7 +6,7 @@ use crate::{
     ast::{self, Item},
     hir::{
         type_resolving::TypeResolvingScope,
-        types::{Enum, Record, Type, Variant},
+        types::{Entity, Enum, Record, Type, Variant},
         HIR,
     },
     message::Message,
@@ -31,6 +31,12 @@ impl<'hir> RoughLowering<'_, 'hir> {
 
     pub fn lower_item(&mut self, item: &Item, scope: usize) {
         match &item.base.0 {
+            ast::ItemBase::Entity(e) => self.introduce_type(scope, |type_id| {
+                Type::Entity(Entity {
+                    type_id,
+                    name: e.name,
+                })
+            }),
             ast::ItemBase::Record(r) => self.introduce_type(scope, |type_id| {
                 Type::Record(Record {
                     type_id,

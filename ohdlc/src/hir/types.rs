@@ -15,6 +15,7 @@ impl Debug for Types<'_> {
 
 #[derive(Debug)]
 pub enum Type<'hir> {
+    Entity(Entity),
     Record(Record),
     Enum(Enum<'hir>),
 }
@@ -22,6 +23,7 @@ pub enum Type<'hir> {
 impl Type<'_> {
     pub fn id(&self) -> usize {
         match self {
+            Type::Entity(e) => e.type_id,
             Type::Record(r) => r.type_id,
             Type::Enum(e) => e.type_id,
         }
@@ -29,10 +31,18 @@ impl Type<'_> {
 
     pub fn name(&self) -> Ident {
         match self {
+            Type::Entity(e) => e.name,
             Type::Record(r) => r.name,
             Type::Enum(e) => e.name,
         }
     }
+}
+
+#[derive(Debug)]
+pub struct Entity {
+    pub type_id: usize,
+    pub name: Ident,
+    // TODO: ports
 }
 
 #[derive(Debug)]

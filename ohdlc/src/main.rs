@@ -47,6 +47,7 @@ fn main() -> Result<(), ()> {
         parser.parse_item().unwrap(),
         parser.parse_item().unwrap(),
         parser.parse_item().unwrap(),
+        parser.parse_item().unwrap(),
     ]);
 
     println!("{hir:#?}");
