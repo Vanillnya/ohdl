@@ -54,7 +54,10 @@ impl<'hir> RoughLowering<'_, 'hir> {
     where
         F: FnOnce(usize) -> Type<'hir>,
     {
-        let id = self.hir.types.insert_with(f);
+        let entry = self.hir.types.vacant_entry();
+        let id = entry.key();
+        entry.insert(f(id));
+
         let name = self.hir.types[id].name();
         match self.hir.tr_scopes[scope].types.entry(name.0) {
             Entry::Vacant(entry) => {

@@ -10,4 +10,4 @@ deref-derive = "0.1.0"
 lasso = { version = "0.7.2", features = ["multi-threaded"] }
 logos = "0.13.0"
 once_cell = "1.19.0"
-slab = { git = "https://github.com/DasLixou/slab" }
+slab = "0.4.9"
