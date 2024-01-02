@@ -1,5 +1,5 @@
 use crate::{
-    ast::{Arch, Entity, Enum, Field, Item, Port, PortKind, Record, Use},
+    ast::{Arch, Entity, Enum, Field, Item, Module, Port, PortKind, Record, Use},
     lexer::TokenKind,
     message::Message,
     span::{Spanned, WithSpan},
@@ -13,6 +13,7 @@ impl<'s, 'a> Parser<'s, 'a> {
     pub fn parse_item(&mut self) -> PResult<Item<'a>> {
         match self.next()? {
             Spanned(TokenKind::KwUse, _) => self.parse_use().map(Item::Use),
+            Spanned(TokenKind::KwMod, _) => self.parse_mod().map(Item::Module),
             Spanned(TokenKind::KwEntity, _) => self.parse_entity().map(Item::Entity),
             Spanned(TokenKind::KwArch, _) => self.parse_arch().map(Item::Arch),
             Spanned(TokenKind::KwRecord, _) => self.parse_record().map(Item::Record),
@@ -20,7 +21,7 @@ impl<'s, 'a> Parser<'s, 'a> {
             token => {
                 MESSAGES.report(Message::unexpected_token(
                     token.1,
-                    "'entity' or 'arch' or 'use'",
+                    "one of 'use', 'mod', 'entity', 'arch', 'record', 'enum'",
                     token.0,
                 ));
                 Err(())
@@ -35,6 +36,24 @@ impl<'s, 'a> Parser<'s, 'a> {
         let path = self.parse_path()?;
         self.consume(TokenKind::Semicolon)?;
         Ok(Use { path })
+    }
+
+    /// ### Parses a [`Module`]
+    ///
+    /// Assumes that the `mod` keyword was already consumed.
+    pub fn parse_mod(&mut self) -> PResult<Module<'a>> {
+        let name = self.ident()?;
+        self.consume(TokenKind::OpenCurly)?;
+
+        let mut items = vec![];
+
+        while self.kind()? != TokenKind::CloseCurly {
+            let item = spanned!(self { self.parse_item()? });
+            items.push(item);
+        }
+
+        self.consume(TokenKind::CloseCurly)?;
+        Ok(Module { name, items })
     }
 
     /// ### Parses an [`Entity`]

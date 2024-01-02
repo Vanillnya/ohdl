@@ -43,7 +43,11 @@ fn main() -> Result<(), ()> {
         hir: &mut hir,
     };
 
-    rough.lower_module(&parser.parse_module().unwrap());
+    let root = parser.parse();
+    report_messages(&source);
+    let root = root?;
+
+    rough.lower(&root);
 
     println!("{hir:#?}");
 

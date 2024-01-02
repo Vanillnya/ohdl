@@ -10,6 +10,7 @@ use crate::{
         HIR,
     },
     message::Message,
+    span::Spanned,
     MESSAGES,
 };
 
@@ -19,12 +20,12 @@ pub struct RoughLowering<'a, 'hir> {
 }
 
 impl<'hir> RoughLowering<'_, 'hir> {
-    pub fn lower_module(&mut self, module: &ast::Module) {
+    pub fn lower(&mut self, root: &[Spanned<Item>]) {
         let root_scope = self.hir.tr_scopes.insert(ResolvingScope {
             parent: None,
             entries: HashMap::new(),
         });
-        for item in &module.items {
+        for item in root {
             self.lower_item(item, root_scope);
         }
     }

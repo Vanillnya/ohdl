@@ -8,6 +8,7 @@ use super::{
 #[derive(Debug)]
 pub enum Item<'a> {
     Use(Use),
+    Module(Module<'a>),
     Entity(Entity),
     Arch(Arch<'a>),
     Record(Record),
@@ -17,6 +18,12 @@ pub enum Item<'a> {
 #[derive(Debug)]
 pub struct Use {
     pub path: Path,
+}
+
+#[derive(Debug)]
+pub struct Module<'a> {
+    pub name: Ident,
+    pub items: Vec<Spanned<Item<'a>>>,
 }
 
 #[derive(Debug)]

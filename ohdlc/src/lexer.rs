@@ -21,6 +21,8 @@ pub enum TokenKind {
     KwFor,
     #[token("use")]
     KwUse,
+    #[token("mod")]
+    KwMod,
     #[token("record")]
     KwRecord,
     #[token("enum")]

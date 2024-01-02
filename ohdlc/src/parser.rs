@@ -3,16 +3,17 @@ use std::ops::Range;
 use bumpalo::Bump;
 
 use crate::{
+    ast::Item,
     lexer::{Lexer, TokenKind},
     message::Message,
     span::{Span, Spanned, WithSpan},
+    spanned,
     symbol::{Ident, Symbol},
     Source, MESSAGES,
 };
 
 pub mod expr;
 pub mod item;
-pub mod module;
 pub mod stmt;
 pub mod ty;
 
@@ -33,6 +34,17 @@ impl<'s, 'a> Parser<'s, 'a> {
             lexer,
             cursor: 0,
         }
+    }
+
+    pub fn parse(&mut self) -> PResult<Vec<Spanned<Item<'a>>>> {
+        let mut items = vec![];
+
+        while self.has_next() {
+            let item = spanned!(self { self.parse_item()? });
+            items.push(item)
+        }
+
+        Ok(items)
     }
 
     #[inline(always)]
