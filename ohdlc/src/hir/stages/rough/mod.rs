@@ -5,7 +5,7 @@ use bumpalo::Bump;
 use crate::{
     ast::{self, Item},
     hir::{
-        type_resolving::TypeResolvingScope,
+        resolving::{Resolvable, ResolvingScope},
         types::{Entity, Enum, Record, Type, Variant},
         HIR,
     },
@@ -20,9 +20,9 @@ pub struct RoughLowering<'a, 'hir> {
 
 impl<'hir> RoughLowering<'_, 'hir> {
     pub fn lower_module(&mut self, module: &ast::Module) {
-        let root_scope = self.hir.tr_scopes.insert(TypeResolvingScope {
+        let root_scope = self.hir.tr_scopes.insert(ResolvingScope {
             parent: None,
-            types: HashMap::new(),
+            entries: HashMap::new(),
         });
         for item in &module.items {
             self.lower_item(item, root_scope);
@@ -65,12 +65,15 @@ impl<'hir> RoughLowering<'_, 'hir> {
         entry.insert(f(id));
 
         let name = self.hir.types[id].name();
-        match self.hir.tr_scopes[scope].types.entry(name.0) {
+        match self.hir.tr_scopes[scope].entries.entry(name.0) {
             Entry::Vacant(entry) => {
-                entry.insert(id);
+                entry.insert(Resolvable::Type(id));
             }
             Entry::Occupied(entry) => {
-                let original = self.hir.types[*entry.get()].name();
+                let original = match *entry.get() {
+                    Resolvable::Type(t) => self.hir.types[t].name(),
+                    Resolvable::Module(_) => todo!(),
+                };
                 MESSAGES.report(Message::already_in_scope(name.0.get(), name.1, original.1));
             }
         }
