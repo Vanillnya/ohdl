@@ -4,7 +4,11 @@ use bumpalo::Bump;
 
 use crate::{
     ast::{self, Item},
-    hir::{Declaration, Enum, Record, TypeResolvingScope, Variant, HIR},
+    hir::{
+        type_resolving::TypeResolvingScope,
+        types::{Enum, Record, Type, Variant},
+        HIR,
+    },
     message::Message,
     MESSAGES,
 };
@@ -28,13 +32,13 @@ impl<'hir> RoughLowering<'_, 'hir> {
     pub fn lower_item(&mut self, item: &Item, scope: usize) {
         match &item.base.0 {
             ast::ItemBase::Record(r) => self.introduce_type(scope, |type_id| {
-                Declaration::Record(Record {
+                Type::Record(Record {
                     type_id,
                     name: r.name,
                 })
             }),
             ast::ItemBase::Enum(e) => self.introduce_type(scope, |type_id| {
-                Declaration::Enum(Enum {
+                Type::Enum(Enum {
                     type_id,
                     name: e.name,
                     variants: self
@@ -48,7 +52,7 @@ impl<'hir> RoughLowering<'_, 'hir> {
 
     fn introduce_type<F>(&mut self, scope: usize, f: F)
     where
-        F: FnOnce(usize) -> Declaration<'hir>,
+        F: FnOnce(usize) -> Type<'hir>,
     {
         let id = self.hir.types.insert_with(f);
         let name = self.hir.types[id].name();
