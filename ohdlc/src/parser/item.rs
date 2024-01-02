@@ -1,5 +1,5 @@
 use crate::{
-    ast::{Arch, Entity, Enum, Field, Item, ItemBase, Port, PortKind, Record, Use},
+    ast::{Arch, Entity, Enum, Field, Item, Port, PortKind, Record, Use},
     lexer::TokenKind,
     message::Message,
     span::{Spanned, WithSpan},
@@ -11,19 +11,12 @@ use super::{PResult, Parser};
 impl<'s, 'a> Parser<'s, 'a> {
     /// ### Parses an [`Item`]
     pub fn parse_item(&mut self) -> PResult<Item<'a>> {
-        let base = spanned!(self { self.parse_item_base()? });
-
-        Ok(Item { base })
-    }
-
-    /// ### Parses an [`ItemBase`]
-    fn parse_item_base(&mut self) -> PResult<ItemBase<'a>> {
         match self.next()? {
-            Spanned(TokenKind::KwUse, _) => self.parse_use().map(ItemBase::Use),
-            Spanned(TokenKind::KwEntity, _) => self.parse_entity().map(ItemBase::Entity),
-            Spanned(TokenKind::KwArch, _) => self.parse_arch().map(ItemBase::Arch),
-            Spanned(TokenKind::KwRecord, _) => self.parse_record().map(ItemBase::Record),
-            Spanned(TokenKind::KwEnum, _) => self.parse_enum().map(ItemBase::Enum),
+            Spanned(TokenKind::KwUse, _) => self.parse_use().map(Item::Use),
+            Spanned(TokenKind::KwEntity, _) => self.parse_entity().map(Item::Entity),
+            Spanned(TokenKind::KwArch, _) => self.parse_arch().map(Item::Arch),
+            Spanned(TokenKind::KwRecord, _) => self.parse_record().map(Item::Record),
+            Spanned(TokenKind::KwEnum, _) => self.parse_enum().map(Item::Enum),
             token => {
                 MESSAGES.report(Message::unexpected_token(
                     token.1,

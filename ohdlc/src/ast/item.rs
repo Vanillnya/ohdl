@@ -6,12 +6,7 @@ use super::{
 };
 
 #[derive(Debug)]
-pub struct Item<'a> {
-    pub base: Spanned<ItemBase<'a>>,
-}
-
-#[derive(Debug)]
-pub enum ItemBase<'a> {
+pub enum Item<'a> {
     Use(Use),
     Entity(Entity),
     Arch(Arch<'a>),

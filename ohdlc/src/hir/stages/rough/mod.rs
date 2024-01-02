@@ -30,20 +30,20 @@ impl<'hir> RoughLowering<'_, 'hir> {
     }
 
     pub fn lower_item(&mut self, item: &Item, scope: usize) {
-        match &item.base.0 {
-            ast::ItemBase::Entity(e) => self.introduce_type(scope, |type_id| {
+        match item {
+            ast::Item::Entity(e) => self.introduce_type(scope, |type_id| {
                 Type::Entity(Entity {
                     type_id,
                     name: e.name,
                 })
             }),
-            ast::ItemBase::Record(r) => self.introduce_type(scope, |type_id| {
+            ast::Item::Record(r) => self.introduce_type(scope, |type_id| {
                 Type::Record(Record {
                     type_id,
                     name: r.name,
                 })
             }),
-            ast::ItemBase::Enum(e) => self.introduce_type(scope, |type_id| {
+            ast::Item::Enum(e) => self.introduce_type(scope, |type_id| {
                 Type::Enum(Enum {
                     type_id,
                     name: e.name,
