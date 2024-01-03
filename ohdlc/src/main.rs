@@ -1,3 +1,5 @@
+#![deny(rust_2018_idioms)]
+
 use ariadne::{Label, Report};
 use bumpalo::Bump;
 use message::Messages;
@@ -67,7 +69,7 @@ fn main() -> Result<(), ()> {
     Ok(())
 }
 
-fn report_messages(source: &Source) {
+fn report_messages(source: &Source<'_>) {
     MESSAGES.drain(|msg| {
         let filename = source.0.as_str();
 

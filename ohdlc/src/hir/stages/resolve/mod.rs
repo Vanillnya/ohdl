@@ -15,14 +15,14 @@ pub struct ResolveLowering<'a, 'hir> {
 }
 
 impl<'hir> ResolveLowering<'_, 'hir> {
-    pub fn lower(&mut self, root: &[Spanned<ast::Item>]) {
+    pub fn lower(&mut self, root: &[Spanned<ast::Item<'_>>]) {
         let root_scope = 0;
         for item in root {
             self.lower_item(root_scope, item);
         }
     }
 
-    fn lower_item(&mut self, scope: usize, item: &ast::Item) {
+    fn lower_item(&mut self, scope: usize, item: &ast::Item<'_>) {
         match item {
             ast::Item::Use(u) => {
                 let mut search_scope = scope;
@@ -41,7 +41,7 @@ impl<'hir> ResolveLowering<'_, 'hir> {
         }
     }
 
-    fn resolve(&mut self, mut scope: usize, path: &'hir [Ident]) -> Option<Resolvable> {
+    fn resolve(&mut self, mut scope: usize, path: &'hir [Ident]) -> Option<Resolvable<'hir>> {
         for segment in path.iter().take(path.len() - 1) {
             let resolvable = self.hir.resolving_scopes.find(scope, segment.0);
             let resolvable = self.unroll(scope, resolvable, *segment)?;
@@ -67,7 +67,7 @@ impl<'hir> ResolveLowering<'_, 'hir> {
         scope: usize,
         resolvable: Option<Resolvable<'hir>>,
         segment: Ident,
-    ) -> Option<Resolvable> {
+    ) -> Option<Resolvable<'hir>> {
         match resolvable {
             Some(Resolvable::Using(path)) => {
                 let resolved = self.resolve(scope, path)?; // TODO: how do we prevent multi error?

@@ -19,7 +19,7 @@ pub struct RoughLowering<'a, 'hir> {
 }
 
 impl<'hir> RoughLowering<'_, 'hir> {
-    pub fn lower(&mut self, root: &[Spanned<ast::Item>]) {
+    pub fn lower(&mut self, root: &[Spanned<ast::Item<'_>>]) {
         let root_scope = self.hir.resolving_scopes.insert(ResolvingScope {
             parent: None,
             entries: HashMap::new(),
@@ -29,7 +29,7 @@ impl<'hir> RoughLowering<'_, 'hir> {
         }
     }
 
-    pub fn lower_item(&mut self, scope: usize, item: &ast::Item) {
+    pub fn lower_item(&mut self, scope: usize, item: &ast::Item<'_>) {
         match item {
             ast::Item::Use(u) => self.lower_use(scope, u),
             ast::Item::Module(m) => self.lower_mod(scope, m),
@@ -69,7 +69,7 @@ impl<'hir> RoughLowering<'_, 'hir> {
         );
     }
 
-    fn lower_mod(&mut self, scope: usize, m: &ast::Module) {
+    fn lower_mod(&mut self, scope: usize, m: &ast::Module<'_>) {
         let sub_scope = self.hir.resolving_scopes.sub_scope(scope);
 
         let module = self.hir.modules.insert(Module {
