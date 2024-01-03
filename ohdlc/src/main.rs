@@ -4,7 +4,10 @@ use message::Messages;
 use parser::Parser;
 
 use crate::{
-    hir::{stages::rough::RoughLowering, HIR},
+    hir::{
+        stages::{resolve::ResolveLowering, rough::RoughLowering},
+        HIR,
+    },
     lexer::Lexer,
 };
 
@@ -38,16 +41,24 @@ fn main() -> Result<(), ()> {
 
     let hir_arena = Bump::new();
     let mut hir = HIR::new();
-    let mut rough = RoughLowering {
-        arena: &hir_arena,
-        hir: &mut hir,
-    };
 
     let root = parser.parse();
     report_messages(&source);
     let root = root?;
 
+    let mut rough = RoughLowering {
+        arena: &hir_arena,
+        hir: &mut hir,
+    };
     rough.lower(&root);
+
+    report_messages(&source);
+
+    let mut resolve = ResolveLowering {
+        arena: &hir_arena,
+        hir: &mut hir,
+    };
+    resolve.lower(&root);
 
     println!("{hir:#?}");
 

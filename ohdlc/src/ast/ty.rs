@@ -3,7 +3,7 @@ use crate::{span::Spanned, symbol::Ident};
 #[derive(Debug)]
 pub struct Path(pub Vec<PathSegment>);
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct PathSegment(pub Ident);
 
 #[derive(Debug)]

@@ -2,7 +2,7 @@ use std::sync::Mutex;
 
 use ariadne::ReportKind;
 
-use crate::{lexer::TokenKind, span::Span};
+use crate::{lexer::TokenKind, span::Span, symbol::Ident};
 
 pub struct Messages {
     messages: Mutex<Vec<Message>>,
@@ -107,6 +107,33 @@ impl Message {
                 },
             ],
             location: second,
+        }
+    }
+
+    pub fn use_continues_after_type(ty: impl Into<Span>) -> Self {
+        let ty = ty.into();
+        Message {
+            kind: ReportKind::Error,
+            message: "`use` continues after type".to_owned(),
+            labels: vec![Label {
+                span: ty,
+                message: "Type should've ended use here".to_owned(),
+            }],
+            location: ty,
+        }
+    }
+
+    pub fn could_not_resolve(resolvable: Ident) -> Self {
+        let val = resolvable.0.get();
+        let span = resolvable.1;
+        Message {
+            kind: ReportKind::Error,
+            message: format!("Could not resolve {val}"),
+            labels: vec![Label {
+                span,
+                message: "Can't resolve this".to_owned(),
+            }],
+            location: span,
         }
     }
 }
