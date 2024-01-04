@@ -5,7 +5,7 @@ use crate::{
     hir::{resolving::Resolvable, HIR},
     message::Message,
     span::Spanned,
-    symbol::{Ident, Symbol},
+    symbol::Ident,
     MESSAGES,
 };
 
@@ -25,8 +25,14 @@ impl<'hir> ResolveLowering<'_, 'hir> {
     fn lower_item(&mut self, scope: usize, item: &ast::Item<'_>) {
         match item {
             ast::Item::Use(u) => {
-                let mut search_scope = scope;
-                let mut segments = u.path.0.iter();
+                if let Some(resolved) = self.resolve(
+                    scope,
+                    u.path.0.iter().map(|s| s.0).collect::<Vec<_>>().as_slice(),
+                ) {
+                    self.hir.resolving_scopes[scope]
+                        .entries
+                        .insert(u.path.0.last().unwrap().0 .0, resolved);
+                }
             }
             ast::Item::Module(m) => {
                 let sub_scope = match self.hir.resolving_scopes[scope].entries[&m.name.0] {
@@ -41,7 +47,7 @@ impl<'hir> ResolveLowering<'_, 'hir> {
         }
     }
 
-    fn resolve(&mut self, mut scope: usize, path: &'hir [Ident]) -> Option<Resolvable<'hir>> {
+    fn resolve(&mut self, mut scope: usize, path: &[Ident]) -> Option<Resolvable<'hir>> {
         for segment in path.iter().take(path.len() - 1) {
             let resolvable = self.hir.resolving_scopes.find(scope, segment.0);
             let resolvable = self.unroll(scope, resolvable, *segment)?;

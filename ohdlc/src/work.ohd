@@ -25,7 +25,7 @@ arch RTL for HalfAdder {
     c <= a and b;
 }
 
-use a::b::HalfAdder;
+use a::b::Lol;
 
 mod a {
     use other::b;
@@ -33,7 +33,7 @@ mod a {
 
 mod other {
     mod b {
-        entity HalfAdder { }
+        entity Lol { }
     }
 }
 
