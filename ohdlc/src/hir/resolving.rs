@@ -4,6 +4,8 @@ use surotto::{simple::SimpleSurotto, simple_key};
 
 use crate::symbol::{Ident, Symbol};
 
+use super::{modules::ModuleId, types::TypeId};
+
 simple_key!(
     pub struct ScopeId;
 );
@@ -69,7 +71,7 @@ pub struct ResolvingScope<'hir> {
 
 #[derive(Debug, Clone, Copy)]
 pub enum Resolvable<'hir> {
-    Type(usize),
-    Module(usize),
+    Type(TypeId),
+    Module(ModuleId),
     Using(&'hir [Ident]),
 }

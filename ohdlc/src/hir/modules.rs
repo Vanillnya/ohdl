@@ -1,13 +1,17 @@
 use deref_derive::{Deref, DerefMut};
-use slab::Slab;
 use std::fmt::Debug;
+use surotto::{simple::SimpleSurotto, simple_key};
 
 use crate::symbol::Ident;
 
 use super::resolving::ScopeId;
 
+simple_key!(
+    pub struct ModuleId;
+);
+
 #[derive(Default, Deref, DerefMut)]
-pub struct Modules(Slab<Module>);
+pub struct Modules(SimpleSurotto<ModuleId, Module>);
 
 impl Debug for Modules {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

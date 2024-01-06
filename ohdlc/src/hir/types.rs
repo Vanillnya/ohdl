@@ -1,11 +1,15 @@
 use deref_derive::{Deref, DerefMut};
-use slab::Slab;
 use std::fmt::Debug;
+use surotto::{simple::SimpleSurotto, simple_key};
 
 use crate::symbol::Ident;
 
+simple_key!(
+    pub struct TypeId;
+);
+
 #[derive(Default, Deref, DerefMut)]
-pub struct Types<'hir>(Slab<Type<'hir>>);
+pub struct Types<'hir>(SimpleSurotto<TypeId, Type<'hir>>);
 
 impl Debug for Types<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -21,7 +25,7 @@ pub enum Type<'hir> {
 }
 
 impl Type<'_> {
-    pub fn id(&self) -> usize {
+    pub fn id(&self) -> TypeId {
         match self {
             Type::Entity(e) => e.type_id,
             Type::Record(r) => r.type_id,
@@ -40,21 +44,21 @@ impl Type<'_> {
 
 #[derive(Debug)]
 pub struct Entity {
-    pub type_id: usize,
+    pub type_id: TypeId,
     pub name: Ident,
     // TODO: ports
 }
 
 #[derive(Debug)]
 pub struct Record {
-    pub type_id: usize,
+    pub type_id: TypeId,
     pub name: Ident,
     // TODO: fields
 }
 
 #[derive(Debug)]
 pub struct Enum<'hir> {
-    pub type_id: usize,
+    pub type_id: TypeId,
     pub name: Ident,
     pub variants: &'hir [Variant],
 }

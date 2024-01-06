@@ -5,7 +5,7 @@ use crate::{
     hir::{
         modules::Module,
         resolving::{Resolvable, ScopeId},
-        types::{Entity, Enum, Record, Type, Variant},
+        types::{Entity, Enum, Record, Type, TypeId, Variant},
         HIR,
     },
     span::Spanned,
@@ -80,11 +80,9 @@ impl<'hir> RoughLowering<'_, 'hir> {
 
     fn introduce_type<F>(&mut self, scope: ScopeId, f: F)
     where
-        F: FnOnce(usize) -> Type<'hir>,
+        F: FnOnce(TypeId) -> Type<'hir>,
     {
-        let entry = self.hir.types.vacant_entry();
-        let id = entry.key();
-        entry.insert(f(id));
+        let id = self.hir.types.insert_with(f);
 
         let name = self.hir.types[id].name();
         self.hir.introduce(scope, name, Resolvable::Type(id));
