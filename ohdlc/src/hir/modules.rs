@@ -4,6 +4,8 @@ use std::fmt::Debug;
 
 use crate::symbol::Ident;
 
+use super::resolving::ScopeId;
+
 #[derive(Default, Deref, DerefMut)]
 pub struct Modules(Slab<Module>);
 
@@ -16,5 +18,5 @@ impl Debug for Modules {
 #[derive(Debug)]
 pub struct Module {
     pub name: Ident,
-    pub scope: usize,
+    pub scope: ScopeId,
 }

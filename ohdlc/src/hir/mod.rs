@@ -8,7 +8,7 @@ use crate::{message::Message, symbol::Ident, MESSAGES};
 
 use self::{
     modules::Modules,
-    resolving::{Resolvable, ResolvingScopes},
+    resolving::{Resolvable, ResolvingScopes, ScopeId},
     types::Types,
 };
 
@@ -26,11 +26,11 @@ impl<'hir> HIR<'hir> {
         Self {
             types: Types::default(),
             modules: Modules::default(),
-            resolving_scopes: ResolvingScopes::default(),
+            resolving_scopes: ResolvingScopes::new(),
         }
     }
 
-    pub fn introduce(&mut self, scope: usize, name: Ident, resolvable: Resolvable<'hir>) {
+    pub fn introduce(&mut self, scope: ScopeId, name: Ident, resolvable: Resolvable<'hir>) {
         match self.resolving_scopes[scope].entries.entry(name.0) {
             Entry::Vacant(entry) => {
                 entry.insert(resolvable);

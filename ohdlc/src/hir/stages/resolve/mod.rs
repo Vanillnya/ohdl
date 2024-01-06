@@ -2,7 +2,10 @@ use bumpalo::Bump;
 
 use crate::{
     ast,
-    hir::{resolving::Resolvable, HIR},
+    hir::{
+        resolving::{Resolvable, ScopeId},
+        HIR,
+    },
     message::Message,
     span::Spanned,
     symbol::Ident,
@@ -16,13 +19,12 @@ pub struct ResolveLowering<'a, 'hir> {
 
 impl<'hir> ResolveLowering<'_, 'hir> {
     pub fn lower(&mut self, root: &[Spanned<ast::Item<'_>>]) {
-        let root_scope = 0;
         for item in root {
-            self.lower_item(root_scope, item);
+            self.lower_item(self.hir.resolving_scopes.root(), item);
         }
     }
 
-    fn lower_item(&mut self, scope: usize, item: &ast::Item<'_>) {
+    fn lower_item(&mut self, scope: ScopeId, item: &ast::Item<'_>) {
         match item {
             ast::Item::Use(u) => {
                 if let Some(resolved) = self.resolve(
@@ -47,7 +49,7 @@ impl<'hir> ResolveLowering<'_, 'hir> {
         }
     }
 
-    fn resolve(&mut self, mut scope: usize, path: &[Ident]) -> Option<Resolvable<'hir>> {
+    fn resolve(&mut self, mut scope: ScopeId, path: &[Ident]) -> Option<Resolvable<'hir>> {
         for segment in path.iter().take(path.len() - 1) {
             let resolvable = self.hir.resolving_scopes.find(scope, segment.0);
             let resolvable = self.unroll(scope, resolvable, *segment)?;
@@ -70,7 +72,7 @@ impl<'hir> ResolveLowering<'_, 'hir> {
 
     fn unroll(
         &mut self,
-        scope: usize,
+        scope: ScopeId,
         resolvable: Option<Resolvable<'hir>>,
         segment: Ident,
     ) -> Option<Resolvable<'hir>> {

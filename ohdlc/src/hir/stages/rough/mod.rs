@@ -1,12 +1,10 @@
-use std::collections::HashMap;
-
 use bumpalo::Bump;
 
 use crate::{
     ast::{self},
     hir::{
         modules::Module,
-        resolving::{Resolvable, ResolvingScope},
+        resolving::{Resolvable, ScopeId},
         types::{Entity, Enum, Record, Type, Variant},
         HIR,
     },
@@ -20,16 +18,12 @@ pub struct RoughLowering<'a, 'hir> {
 
 impl<'hir> RoughLowering<'_, 'hir> {
     pub fn lower(&mut self, root: &[Spanned<ast::Item<'_>>]) {
-        let root_scope = self.hir.resolving_scopes.insert(ResolvingScope {
-            parent: None,
-            entries: HashMap::new(),
-        });
         for item in root {
-            self.lower_item(root_scope, item);
+            self.lower_item(self.hir.resolving_scopes.root(), item);
         }
     }
 
-    pub fn lower_item(&mut self, scope: usize, item: &ast::Item<'_>) {
+    pub fn lower_item(&mut self, scope: ScopeId, item: &ast::Item<'_>) {
         match item {
             ast::Item::Use(u) => self.lower_use(scope, u),
             ast::Item::Module(m) => self.lower_mod(scope, m),
@@ -58,7 +52,7 @@ impl<'hir> RoughLowering<'_, 'hir> {
         }
     }
 
-    fn lower_use(&mut self, scope: usize, u: &ast::Use) {
+    fn lower_use(&mut self, scope: ScopeId, u: &ast::Use) {
         self.hir.introduce(
             scope,
             u.path.0.last().unwrap().0,
@@ -69,7 +63,7 @@ impl<'hir> RoughLowering<'_, 'hir> {
         );
     }
 
-    fn lower_mod(&mut self, scope: usize, m: &ast::Module<'_>) {
+    fn lower_mod(&mut self, scope: ScopeId, m: &ast::Module<'_>) {
         let sub_scope = self.hir.resolving_scopes.sub_scope(scope);
 
         let module = self.hir.modules.insert(Module {
@@ -84,7 +78,7 @@ impl<'hir> RoughLowering<'_, 'hir> {
         }
     }
 
-    fn introduce_type<F>(&mut self, scope: usize, f: F)
+    fn introduce_type<F>(&mut self, scope: ScopeId, f: F)
     where
         F: FnOnce(usize) -> Type<'hir>,
     {
