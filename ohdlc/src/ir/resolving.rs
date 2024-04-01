@@ -11,7 +11,7 @@ simple_key!(
     pub struct ScopeId;
 );
 
-#[derive(Deref, DerefMut)]
+#[derive(Debug, Deref, DerefMut)]
 pub struct ResolvingScopes {
     #[deref]
     pub scopes: SimpleSurotto<ScopeId, ResolvingScope>,
@@ -33,12 +33,6 @@ impl ResolvingScopes {
             parent: Some(parent),
             entries: HashMap::new(),
         })
-    }
-}
-
-impl Debug for ResolvingScopes {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_list().entries(self.scopes.iter()).finish()
     }
 }
 

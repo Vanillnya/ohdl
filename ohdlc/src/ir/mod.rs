@@ -1,10 +1,10 @@
-use std::collections::{hash_map::Entry, VecDeque};
+use std::collections::hash_map::Entry;
 
 use crate::{message::Message, symbol::Ident, MESSAGES};
 
 use self::{
     modules::Modules,
-    name_resolution::Import,
+    name_resolution::NameResolution,
     resolving::{Resolvable, ResolvingScopes, ScopeId},
     types::Types,
 };
@@ -21,7 +21,7 @@ pub struct IR<'ir> {
     pub types: Types<'ir>,
     pub modules: Modules,
     pub resolving_scopes: ResolvingScopes,
-    pub imports: VecDeque<Import<'ir>>,
+    pub name_resolution: NameResolution<'ir>,
 }
 
 impl<'ir> IR<'ir> {
@@ -30,7 +30,7 @@ impl<'ir> IR<'ir> {
             types: Types::default(),
             modules: Modules::default(),
             resolving_scopes: ResolvingScopes::new(),
-            imports: VecDeque::new(),
+            name_resolution: NameResolution::new(),
         }
     }
 
