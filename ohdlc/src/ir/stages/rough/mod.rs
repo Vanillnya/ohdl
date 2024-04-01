@@ -1,8 +1,9 @@
-use std::collections::hash_map::Entry;
+use std::collections::{hash_map::Entry, VecDeque};
 
 use crate::{
     ir::{
         modules::Modules,
+        name_resolution::Import,
         resolving::{Resolvable, ResolvingScopes},
         types::Types,
         ScopeId,
@@ -19,6 +20,7 @@ pub struct RoughIR<'ir> {
     pub types: Types<'ir>,
     pub modules: Modules,
     pub resolving_scopes: ResolvingScopes,
+    pub imports: VecDeque<Import<'ir>>,
 }
 
 impl<'ir> RoughIR<'ir> {
@@ -27,6 +29,7 @@ impl<'ir> RoughIR<'ir> {
             types: Types::default(),
             modules: Modules::default(),
             resolving_scopes: ResolvingScopes::new(),
+            imports: VecDeque::new(),
         }
     }
 

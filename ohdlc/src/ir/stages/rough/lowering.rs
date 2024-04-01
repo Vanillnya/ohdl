@@ -68,8 +68,7 @@ impl<'ir> RoughLowering<'ir> {
                 .arena
                 .alloc_slice_fill_iter(path.iter().map(|seg| seg.0)),
         };
-        // TODO: safe that somewhere
-        println!("{import:?}");
+        self.ir.imports.push_back(import);
     }
 
     fn lower_mod(&mut self, scope: ScopeId, m: &ast::Module<'_>) {
