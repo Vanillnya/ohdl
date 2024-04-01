@@ -6,7 +6,10 @@ use message::Messages;
 use parser::Parser;
 
 use crate::{
-    ir::{stages::rough::lowering::RoughLowering, IR},
+    ir::{
+        stages::{resolve::ResolveLowering, rough::lowering::RoughLowering},
+        IR,
+    },
     lexer::Lexer,
 };
 
@@ -46,13 +49,23 @@ fn main() -> Result<(), ()> {
 
     let mut ir = IR::new();
 
-    let rough = RoughLowering {
-        arena: &ir_arena,
-        ir: &mut ir,
-    };
-    rough.lower(&root);
+    {
+        let rough = RoughLowering {
+            arena: &ir_arena,
+            ir: &mut ir,
+        };
+        rough.lower(&root);
+        report_messages(&source);
+    }
 
-    report_messages(&source);
+    {
+        let resolve = ResolveLowering {
+            arena: &ir_arena,
+            ir: &mut ir,
+        };
+        resolve.lower();
+        report_messages(&source);
+    }
 
     Ok(())
 }

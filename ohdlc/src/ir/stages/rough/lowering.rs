@@ -12,12 +12,12 @@ use crate::{
     span::Spanned,
 };
 
-pub struct RoughLowering<'ir> {
+pub struct RoughLowering<'ir, 'b> {
     pub arena: &'ir Bump,
-    pub ir: &'ir mut IR<'ir>,
+    pub ir: &'b mut IR<'ir>,
 }
 
-impl<'ir> RoughLowering<'ir> {
+impl<'ir> RoughLowering<'ir, '_> {
     pub fn lower(mut self, root: &[Spanned<ast::Item<'_>>]) {
         for item in root {
             self.lower_item(self.ir.resolving_scopes.root, item);
