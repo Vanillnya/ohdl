@@ -67,6 +67,10 @@ fn main() -> Result<(), ()> {
         report_messages(&source);
     }
 
+    for import in ir.name_resolution.imports.values() {
+        println!("{import:?}");
+    }
+
     Ok(())
 }
 

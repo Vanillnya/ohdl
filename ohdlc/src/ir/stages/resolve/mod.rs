@@ -1,6 +1,6 @@
 use bumpalo::Bump;
 
-use crate::ir::IR;
+use crate::ir::{resolving::Resolvable, IR};
 
 pub struct ResolveLowering<'ir, 'b> {
     pub arena: &'ir Bump,
@@ -10,11 +10,19 @@ pub struct ResolveLowering<'ir, 'b> {
 impl<'ir> ResolveLowering<'ir, '_> {
     pub fn lower(mut self) {
         while let Some(id) = self.ir.name_resolution.queue.pop_front() {
-            let import = &self.ir.name_resolution.imports[id];
+            let import = &mut self.ir.name_resolution.imports[id];
             let segment = import.path.first().unwrap();
-            if let Some(thing) = self.ir.resolving_scopes[import.src].entries.get(&segment) {
-                println!("{thing:?}");
+            if let Some(&resolvable) = self.ir.resolving_scopes[import.src].entries.get(&segment) {
                 println!("{segment:?}");
+                match resolvable {
+                    Resolvable::Type(t) => todo!(),
+                    Resolvable::Module(m) => {
+                        let module = &self.ir.modules[m];
+                        import.src = module.scope;
+                        import.path = &import.path[1..];
+                    }
+                    Resolvable::Import(i) => todo!(),
+                }
             }
         }
     }
