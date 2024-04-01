@@ -4,7 +4,7 @@ use surotto::{simple::SimpleSurotto, simple_key};
 
 use crate::symbol::Ident;
 
-use super::ScopeId;
+use super::resolving::ScopeId;
 
 simple_key!(
     pub struct ModuleId;

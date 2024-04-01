@@ -5,9 +5,8 @@ use crate::{
     ir::{
         modules::Module,
         name_resolution::Import,
-        resolving::Resolvable,
+        resolving::{Resolvable, ScopeId},
         types::{Entity, Enum, Record, Type, TypeId, Variant},
-        ScopeId,
     },
     span::Spanned,
 };

@@ -4,9 +4,8 @@ use crate::{
     ir::{
         modules::Modules,
         name_resolution::Import,
-        resolving::{Resolvable, ResolvingScopes},
+        resolving::{Resolvable, ResolvingScopes, ScopeId},
         types::Types,
-        ScopeId,
     },
     message::Message,
     symbol::Ident,

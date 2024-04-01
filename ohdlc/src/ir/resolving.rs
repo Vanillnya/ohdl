@@ -1,11 +1,15 @@
 use deref_derive::{Deref, DerefMut};
 use std::{collections::HashMap, fmt::Debug};
-use surotto::simple::SimpleSurotto;
+use surotto::{simple::SimpleSurotto, simple_key};
 
 use crate::{
-    ir::{modules::ModuleId, types::TypeId, ScopeId},
+    ir::{modules::ModuleId, types::TypeId},
     symbol::Symbol,
 };
+
+simple_key!(
+    pub struct ScopeId;
+);
 
 #[derive(Deref, DerefMut)]
 pub struct ResolvingScopes {

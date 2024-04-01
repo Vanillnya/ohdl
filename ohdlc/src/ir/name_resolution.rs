@@ -1,6 +1,6 @@
 use crate::symbol::Ident;
 
-use super::ScopeId;
+use super::resolving::ScopeId;
 
 /// ```ohdl,ignore
 /// mod src {
