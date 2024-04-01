@@ -7,27 +7,21 @@ use crate::{
         name_resolution::Import,
         resolving::{Resolvable, ScopeId},
         types::{Entity, Enum, Record, Type, TypeId, Variant},
+        IR,
     },
     span::Spanned,
 };
 
-use super::RoughIR;
-
 pub struct RoughLowering<'ir> {
     pub arena: &'ir Bump,
-    pub ir: RoughIR<'ir>,
+    pub ir: &'ir mut IR<'ir>,
 }
 
 impl<'ir> RoughLowering<'ir> {
-    pub fn lower(arena: &'ir Bump, root: &[Spanned<ast::Item<'_>>]) -> Self {
-        let mut lowering = RoughLowering {
-            arena,
-            ir: RoughIR::new(),
-        };
+    pub fn lower(mut self, root: &[Spanned<ast::Item<'_>>]) {
         for item in root {
-            lowering.lower_item(lowering.ir.resolving_scopes.root, item);
+            self.lower_item(self.ir.resolving_scopes.root, item);
         }
-        lowering
     }
 
     pub fn lower_item(&mut self, scope: ScopeId, item: &ast::Item<'_>) {

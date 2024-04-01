@@ -5,7 +5,10 @@ use bumpalo::Bump;
 use message::Messages;
 use parser::Parser;
 
-use crate::{ir::stages::rough::lowering::RoughLowering, lexer::Lexer};
+use crate::{
+    ir::{stages::rough::lowering::RoughLowering, IR},
+    lexer::Lexer,
+};
 
 mod ast;
 mod ir;
@@ -41,9 +44,13 @@ fn main() -> Result<(), ()> {
     report_messages(&source);
     let root = root?;
 
-    let rough = RoughLowering::lower(&ir_arena, &root).ir;
+    let mut ir = IR::new();
 
-    //println!("{rough:#?}");
+    let rough = RoughLowering {
+        arena: &ir_arena,
+        ir: &mut ir,
+    };
+    rough.lower(&root);
 
     report_messages(&source);
 
