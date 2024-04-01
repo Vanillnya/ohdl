@@ -43,7 +43,7 @@ fn main() -> Result<(), ()> {
 
     let rough = RoughLowering::lower(&ir_arena, &root).ir;
 
-    println!("{rough:#?}");
+    //println!("{rough:#?}");
 
     report_messages(&source);
 

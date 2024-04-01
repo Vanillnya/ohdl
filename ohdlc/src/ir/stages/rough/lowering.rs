@@ -4,6 +4,7 @@ use crate::{
     ast,
     ir::{
         modules::Module,
+        name_resolution::Import,
         resolving::Resolvable,
         types::{Entity, Enum, Record, Type, TypeId, Variant},
         ScopeId,
@@ -60,27 +61,15 @@ impl<'ir> RoughLowering<'ir> {
     }
 
     fn lower_use(&mut self, scope: ScopeId, u: &ast::Use) {
-        /*let path = &u.path.0;
-        let way_len = u.path.0.len() - 2;
-        let src = path.first().unwrap().0;
-        let dst = path.last().unwrap().0;
-        let resolution = NameResolution {
-            flag: Cell::new(false),
-            src,
-            way: self
+        let path = &u.path.0;
+        let import = Import {
+            src: scope,
+            path: self
                 .arena
-                .alloc_slice_fill_iter(path.iter().map(|seg| seg.0).skip(1).take(way_len)),
-            dst,
+                .alloc_slice_fill_iter(path.iter().map(|seg| seg.0)),
         };
-        let old = self
-            .ir
-            .import_map
-            .entry(scope)
-            .or_default()
-            .insert(dst.0, resolution);
-        // TODO:
-        assert!(old.is_none());*/
-        todo!()
+        // TODO: safe that somewhere
+        println!("{import:?}");
     }
 
     fn lower_mod(&mut self, scope: ScopeId, m: &ast::Module<'_>) {
