@@ -63,6 +63,8 @@ impl<'ir> RoughLowering<'ir, '_> {
         };
         let id = self.ir.name_resolution.imports.insert(import);
         self.ir.name_resolution.queue.push_back(id);
+        self.ir
+            .introduce(scope, path.last().unwrap().0, Resolvable::Import(id));
     }
 
     fn lower_mod(&mut self, scope: ScopeId, m: &ast::Module<'_>) {

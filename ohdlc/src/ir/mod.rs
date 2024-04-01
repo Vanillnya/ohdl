@@ -43,6 +43,7 @@ impl<'ir> IR<'ir> {
                 let original = match *entry.get() {
                     Resolvable::Type(t) => self.types[t].name(),
                     Resolvable::Module(m) => self.modules[m].name,
+                    Resolvable::Import(i) => *self.name_resolution.imports[i].path.last().unwrap(),
                 };
                 MESSAGES.report(Message::already_in_scope(name.0.get(), name.1, original.1));
             }

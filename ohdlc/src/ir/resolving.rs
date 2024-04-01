@@ -7,6 +7,8 @@ use crate::{
     symbol::Symbol,
 };
 
+use super::name_resolution::ImportId;
+
 simple_key!(
     pub struct ScopeId;
 );
@@ -46,4 +48,5 @@ pub struct ResolvingScope {
 pub enum Resolvable {
     Type(TypeId),
     Module(ModuleId),
+    Import(ImportId),
 }
