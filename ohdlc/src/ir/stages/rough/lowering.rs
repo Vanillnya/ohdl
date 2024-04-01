@@ -1,26 +1,33 @@
 use bumpalo::Bump;
 
 use crate::{
-    ast::{self},
-    hir::{
+    ast,
+    ir::{
         modules::Module,
-        resolving::{Resolvable, ScopeId},
+        resolving::Resolvable,
         types::{Entity, Enum, Record, Type, TypeId, Variant},
-        HIR,
+        ScopeId,
     },
     span::Spanned,
 };
 
-pub struct RoughLowering<'a, 'hir> {
-    pub arena: &'hir Bump,
-    pub hir: &'a mut HIR<'hir>,
+use super::RoughIR;
+
+pub struct RoughLowering<'ir> {
+    pub arena: &'ir Bump,
+    pub ir: RoughIR<'ir>,
 }
 
-impl<'hir> RoughLowering<'_, 'hir> {
-    pub fn lower(&mut self, root: &[Spanned<ast::Item<'_>>]) {
+impl<'ir> RoughLowering<'ir> {
+    pub fn lower(arena: &'ir Bump, root: &[Spanned<ast::Item<'_>>]) -> Self {
+        let mut lowering = RoughLowering {
+            arena,
+            ir: RoughIR::new(),
+        };
         for item in root {
-            self.lower_item(self.hir.resolving_scopes.root(), item);
+            lowering.lower_item(lowering.ir.resolving_scopes.root, item);
         }
+        lowering
     }
 
     pub fn lower_item(&mut self, scope: ScopeId, item: &ast::Item<'_>) {
@@ -53,25 +60,37 @@ impl<'hir> RoughLowering<'_, 'hir> {
     }
 
     fn lower_use(&mut self, scope: ScopeId, u: &ast::Use) {
-        self.hir.introduce(
-            scope,
-            u.path.0.last().unwrap().0,
-            Resolvable::Using(
-                self.arena
-                    .alloc_slice_fill_iter(u.path.0.iter().map(|seg| seg.0)),
-            ),
-        );
+        /*let path = &u.path.0;
+        let way_len = u.path.0.len() - 2;
+        let src = path.first().unwrap().0;
+        let dst = path.last().unwrap().0;
+        let resolution = NameResolution {
+            flag: Cell::new(false),
+            src,
+            way: self
+                .arena
+                .alloc_slice_fill_iter(path.iter().map(|seg| seg.0).skip(1).take(way_len)),
+            dst,
+        };
+        let old = self
+            .ir
+            .import_map
+            .entry(scope)
+            .or_default()
+            .insert(dst.0, resolution);
+        // TODO:
+        assert!(old.is_none());*/
+        todo!()
     }
 
     fn lower_mod(&mut self, scope: ScopeId, m: &ast::Module<'_>) {
-        let sub_scope = self.hir.resolving_scopes.sub_scope(scope);
+        let sub_scope = self.ir.resolving_scopes.sub_scope(scope);
 
-        let module = self.hir.modules.insert(Module {
+        let module = self.ir.modules.insert(Module {
             name: m.name,
             scope: sub_scope,
         });
-        self.hir
-            .introduce(scope, m.name, Resolvable::Module(module));
+        self.ir.introduce(scope, m.name, Resolvable::Module(module));
 
         for i in &m.items {
             self.lower_item(sub_scope, i);
@@ -80,11 +99,11 @@ impl<'hir> RoughLowering<'_, 'hir> {
 
     fn introduce_type<F>(&mut self, scope: ScopeId, f: F)
     where
-        F: FnOnce(TypeId) -> Type<'hir>,
+        F: FnOnce(TypeId) -> Type<'ir>,
     {
-        let id = self.hir.types.insert_with(f);
+        let id = self.ir.types.insert_with(f);
 
-        let name = self.hir.types[id].name();
-        self.hir.introduce(scope, name, Resolvable::Type(id));
+        let name = self.ir.types[id].name();
+        self.ir.introduce(scope, name, Resolvable::Type(id));
     }
 }

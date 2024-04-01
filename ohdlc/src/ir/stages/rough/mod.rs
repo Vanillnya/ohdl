@@ -1,27 +1,27 @@
-mod modules;
-mod resolving;
-mod types;
+use std::collections::hash_map::Entry;
 
-use std::{collections::hash_map::Entry, fmt::Debug};
-
-use crate::{message::Message, symbol::Ident, MESSAGES};
-
-use self::{
-    modules::Modules,
-    resolving::{Resolvable, ResolvingScopes, ScopeId},
-    types::Types,
+use crate::{
+    ir::{
+        modules::Modules,
+        resolving::{Resolvable, ResolvingScopes},
+        types::Types,
+        ScopeId,
+    },
+    message::Message,
+    symbol::Ident,
+    MESSAGES,
 };
 
-pub mod stages;
+pub mod lowering;
 
 #[derive(Debug)]
-pub struct HIR<'hir> {
-    pub types: Types<'hir>,
+pub struct RoughIR<'ir> {
+    pub types: Types<'ir>,
     pub modules: Modules,
-    pub resolving_scopes: ResolvingScopes<'hir>,
+    pub resolving_scopes: ResolvingScopes,
 }
 
-impl<'hir> HIR<'hir> {
+impl<'ir> RoughIR<'ir> {
     pub fn new() -> Self {
         Self {
             types: Types::default(),
@@ -30,7 +30,7 @@ impl<'hir> HIR<'hir> {
         }
     }
 
-    pub fn introduce(&mut self, scope: ScopeId, name: Ident, resolvable: Resolvable<'hir>) {
+    pub fn introduce(&mut self, scope: ScopeId, name: Ident, resolvable: Resolvable) {
         match self.resolving_scopes[scope].entries.entry(name.0) {
             Entry::Vacant(entry) => {
                 entry.insert(resolvable);
@@ -39,7 +39,6 @@ impl<'hir> HIR<'hir> {
                 let original = match *entry.get() {
                     Resolvable::Type(t) => self.types[t].name(),
                     Resolvable::Module(m) => self.modules[m].name,
-                    Resolvable::Using(u) => *u.last().unwrap(),
                 };
                 MESSAGES.report(Message::already_in_scope(name.0.get(), name.1, original.1));
             }

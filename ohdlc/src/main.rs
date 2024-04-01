@@ -5,16 +5,10 @@ use bumpalo::Bump;
 use message::Messages;
 use parser::Parser;
 
-use crate::{
-    hir::{
-        stages::{resolve::ResolveLowering, rough::RoughLowering},
-        HIR,
-    },
-    lexer::Lexer,
-};
+use crate::{ir::stages::rough::lowering::RoughLowering, lexer::Lexer};
 
 mod ast;
-mod hir;
+mod ir;
 mod lexer;
 mod message;
 mod parser;
@@ -41,28 +35,15 @@ fn main() -> Result<(), ()> {
 
     let mut parser = Parser::new(&parser_arena, source.clone(), lexer);
 
-    let hir_arena = Bump::new();
-    let mut hir = HIR::new();
+    let ir_arena = Bump::new();
 
     let root = parser.parse();
     report_messages(&source);
     let root = root?;
 
-    let mut rough = RoughLowering {
-        arena: &hir_arena,
-        hir: &mut hir,
-    };
-    rough.lower(&root);
+    let rough = RoughLowering::lower(&ir_arena, &root).ir;
 
-    report_messages(&source);
-
-    let mut resolve = ResolveLowering {
-        arena: &hir_arena,
-        hir: &mut hir,
-    };
-    resolve.lower(&root);
-
-    println!("{hir:#?}");
+    println!("{rough:#?}");
 
     report_messages(&source);
 

@@ -27,6 +27,8 @@ arch RTL for HalfAdder {
 
 use a::b::Lol;
 
+entity Lol { }
+
 mod a {
     use other::b;
 }
