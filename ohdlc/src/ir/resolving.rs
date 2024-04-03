@@ -3,11 +3,12 @@ use std::{collections::HashMap, fmt::Debug};
 use surotto::{simple::SimpleSurotto, simple_key};
 
 use crate::{
+    ast::PathStart,
     ir::{modules::ModuleId, types::TypeId},
     symbol::{Ident, Symbol},
 };
 
-use super::name_resolution::{ImportId, PathStart};
+use super::name_resolution::ImportId;
 
 simple_key!(
     pub struct ScopeId;

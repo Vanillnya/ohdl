@@ -2,9 +2,9 @@ use std::collections::VecDeque;
 
 use surotto::{simple::SimpleSurotto, simple_key};
 
-use crate::symbol::Ident;
+use crate::{ast::PathStart, symbol::Ident};
 
-use super::resolving::{Resolvable, Resolved, ScopeId};
+use super::resolving::{Resolved, ScopeId};
 
 /// ```ohdl,ignore
 /// mod scope {
@@ -28,13 +28,6 @@ pub struct Import<'ir> {
 pub enum ImportResult<'ir> {
     InProgress(Import<'ir>),
     Finished(Resolved),
-}
-
-#[derive(Debug, Clone, Copy)]
-pub enum PathStart {
-    /// Search directly in the given scope for the next path segment
-    Direct,
-    Indirect,
 }
 
 simple_key!(

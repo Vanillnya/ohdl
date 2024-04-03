@@ -1,7 +1,16 @@
 use crate::{span::Spanned, symbol::Ident};
 
 #[derive(Debug)]
-pub struct Path(pub Vec<PathSegment>);
+pub struct Path(pub Vec<PathSegment>, pub PathStart);
+
+#[derive(Debug, Clone, Copy)]
+pub enum PathStart {
+    /// Search directly in the given scope for the next path segment
+    /// e.g. `::path::path`
+    Direct,
+    /// e.g. `path::path`
+    Indirect,
+}
 
 #[derive(Debug, Clone, Copy)]
 pub struct PathSegment(pub Ident);

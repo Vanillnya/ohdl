@@ -1,13 +1,13 @@
 use bumpalo::Bump;
 
 use crate::{
+    ast::PathStart,
     ir::{
-        name_resolution::{ImportResult, PathStart},
-        resolving::{Resolvable, Resolved, ScopeId},
+        name_resolution::ImportResult,
+        resolving::{Resolvable, Resolved},
         IR,
     },
     message::Message,
-    symbol::Ident,
     MESSAGES,
 };
 
@@ -17,7 +17,7 @@ pub struct ResolveLowering<'ir, 'b> {
 }
 
 impl<'ir> ResolveLowering<'ir, '_> {
-    pub fn lower(mut self) {
+    pub fn lower(self) {
         while let Some(id) = self.ir.name_resolution.queue.pop_front() {
             let import = &self.ir.name_resolution.imports[id];
             let import = match import {
