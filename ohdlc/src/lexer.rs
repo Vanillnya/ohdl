@@ -7,7 +7,7 @@ use crate::{
 };
 
 #[derive(Logos, Debug, PartialEq, Eq, Clone, Copy)]
-#[logos(skip r"[ \t\r\n\f]+")]
+#[logos(skip r#"(?:\/\/[^\n]*|\t|\s|\n|\f)*"#)]
 pub enum TokenKind {
     #[token("entity")]
     KwEntity,
