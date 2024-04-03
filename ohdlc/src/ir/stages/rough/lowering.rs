@@ -4,7 +4,7 @@ use crate::{
     ast,
     ir::{
         modules::Module,
-        name_resolution::Import,
+        name_resolution::{Import, PathStart},
         resolving::{Resolvable, ScopeId},
         types::{Entity, Enum, Record, Type, TypeId, Variant},
         IR,
@@ -56,7 +56,8 @@ impl<'ir> RoughLowering<'ir, '_> {
     fn lower_use(&mut self, scope: ScopeId, u: &ast::Use) {
         let path = &u.path.0;
         let import = Import {
-            src: scope,
+            scope,
+            start: PathStart::Indirect,
             path: self
                 .arena
                 .alloc_slice_fill_iter(path.iter().map(|seg| seg.0)),

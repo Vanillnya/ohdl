@@ -7,16 +7,28 @@ use crate::symbol::Ident;
 use super::resolving::ScopeId;
 
 /// ```ohdl,ignore
-/// mod src {
+/// mod scope {
+///     // indirect
 ///     use path::path::path;
+///     // direct
+///     use ::path::path::path;
 /// }
 /// ```
 #[derive(Debug)]
 pub struct Import<'ir> {
-    /// The scope we start from
-    pub src: ScopeId,
+    /// The scope we take the path from
+    pub scope: ScopeId,
+    /// If the path starts directly or indirectly.
+    pub start: PathStart,
     /// The path we have to take from the source
     pub path: &'ir [Ident],
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum PathStart {
+    /// Search directly in the given scope for the next path segment
+    Direct,
+    Indirect,
 }
 
 simple_key!(

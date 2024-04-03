@@ -1,7 +1,7 @@
 use bumpalo::Bump;
 
 use crate::{
-    ir::{resolving::Resolvable, IR},
+    ir::{name_resolution::PathStart, resolving::Resolvable, IR},
     message::Message,
     MESSAGES,
 };
@@ -19,7 +19,7 @@ impl<'ir> ResolveLowering<'ir, '_> {
             println!("{segment:?}");
 
             let resolvable = {
-                let mut scope = &self.ir.resolving_scopes[import.src];
+                let mut scope = &self.ir.resolving_scopes[import.scope];
                 'resolve: loop {
                     match scope.entries.get(&segment) {
                         Some(resolvable) => break 'resolve Some(resolvable),
@@ -39,7 +39,8 @@ impl<'ir> ResolveLowering<'ir, '_> {
                 Resolvable::Type(t) => todo!(),
                 Resolvable::Module(m) => {
                     let module = &self.ir.modules[m];
-                    import.src = module.scope;
+                    import.scope = module.scope;
+                    import.start = PathStart::Direct;
                     import.path = &import.path[1..];
                 }
                 Resolvable::Import(i) => todo!(),
