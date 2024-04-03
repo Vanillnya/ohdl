@@ -64,7 +64,12 @@ pub struct ResolvingScope {
 
 #[derive(Debug, Clone, Copy)]
 pub enum Resolvable {
+    Resolved(Resolved),
+    Import(ImportId),
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum Resolved {
     Type(TypeId),
     Module(ModuleId),
-    Import(ImportId),
 }

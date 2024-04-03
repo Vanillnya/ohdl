@@ -5,7 +5,7 @@ use crate::{message::Message, symbol::Ident, MESSAGES};
 use self::{
     modules::Modules,
     name_resolution::{ImportResult, NameResolution},
-    resolving::{Resolvable, ResolvingScopes, ScopeId},
+    resolving::{Resolvable, Resolved, ResolvingScopes, ScopeId},
     types::Types,
 };
 
@@ -41,21 +41,24 @@ impl<'ir> IR<'ir> {
             }
             Entry::Occupied(entry) => {
                 let original = match *entry.get() {
-                    Resolvable::Type(t) => self.types[t].name(),
-                    Resolvable::Module(m) => self.modules[m].name,
+                    Resolvable::Resolved(r) => self.name_of_resolved(r),
                     Resolvable::Import(i) => {
                         let import = &self.name_resolution.imports[i];
                         match import {
                             ImportResult::InProgress(i) => *i.path.last().unwrap(),
-                            ImportResult::Finished(_) => {
-                                // TODO: can this happen? :3
-                                panic!("Lixou has to think about this - can this even happen?")
-                            }
+                            ImportResult::Finished(r) => self.name_of_resolved(*r),
                         }
                     }
                 };
                 MESSAGES.report(Message::already_in_scope(name.0.get(), name.1, original.1));
             }
+        }
+    }
+
+    fn name_of_resolved(&self, resolved: Resolved) -> Ident {
+        match resolved {
+            Resolved::Type(t) => self.types[t].name(),
+            Resolved::Module(m) => self.modules[m].name,
         }
     }
 }

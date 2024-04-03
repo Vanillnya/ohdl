@@ -4,7 +4,7 @@ use surotto::{simple::SimpleSurotto, simple_key};
 
 use crate::symbol::Ident;
 
-use super::resolving::{Resolvable, ScopeId};
+use super::resolving::{Resolvable, Resolved, ScopeId};
 
 /// ```ohdl,ignore
 /// mod scope {
@@ -27,7 +27,7 @@ pub struct Import<'ir> {
 #[derive(Debug)]
 pub enum ImportResult<'ir> {
     InProgress(Import<'ir>),
-    Finished(Resolvable),
+    Finished(Resolved),
 }
 
 #[derive(Debug, Clone, Copy)]

@@ -5,7 +5,7 @@ use crate::{
     ir::{
         modules::Module,
         name_resolution::{Import, ImportResult, PathStart},
-        resolving::{Resolvable, ScopeId},
+        resolving::{Resolvable, Resolved, ScopeId},
         types::{Entity, Enum, Record, Type, TypeId, Variant},
         IR,
     },
@@ -79,7 +79,11 @@ impl<'ir> RoughLowering<'ir, '_> {
             name: m.name,
             scope: sub_scope,
         });
-        self.ir.introduce(scope, m.name, Resolvable::Module(module));
+        self.ir.introduce(
+            scope,
+            m.name,
+            Resolvable::Resolved(Resolved::Module(module)),
+        );
 
         for i in &m.items {
             self.lower_item(sub_scope, i);
@@ -93,6 +97,7 @@ impl<'ir> RoughLowering<'ir, '_> {
         let id = self.ir.types.insert_with(f);
 
         let name = self.ir.types[id].name();
-        self.ir.introduce(scope, name, Resolvable::Type(id));
+        self.ir
+            .introduce(scope, name, Resolvable::Resolved(Resolved::Type(id)));
     }
 }
