@@ -1,8 +1,13 @@
 use bumpalo::Bump;
 
 use crate::{
-    ir::{name_resolution::PathStart, resolving::Resolvable, IR},
+    ir::{
+        name_resolution::PathStart,
+        resolving::{Resolvable, ScopeId},
+        IR,
+    },
     message::Message,
+    symbol::Ident,
     MESSAGES,
 };
 
@@ -18,19 +23,11 @@ impl<'ir> ResolveLowering<'ir, '_> {
             let segment = import.path.first().unwrap();
             println!("{segment:?}");
 
-            let resolvable = {
-                let mut scope = &self.ir.resolving_scopes[import.scope];
-                'resolve: loop {
-                    match scope.entries.get(&segment) {
-                        Some(resolvable) => break 'resolve Some(resolvable),
-                        None => match scope.parent {
-                            Some(p) => scope = &self.ir.resolving_scopes[p],
-                            None => break 'resolve None,
-                        },
-                    }
-                }
-            };
-            let Some(resolvable) = resolvable else {
+            let Some(resolvable) = self
+                .ir
+                .resolving_scopes
+                .find_resolvable(import.scope, &segment)
+            else {
                 MESSAGES.report(Message::could_not_resolve(*segment));
                 continue;
             };

@@ -4,7 +4,7 @@ use surotto::{simple::SimpleSurotto, simple_key};
 
 use crate::{
     ir::{modules::ModuleId, types::TypeId},
-    symbol::Symbol,
+    symbol::{Ident, Symbol},
 };
 
 use super::name_resolution::ImportId;
@@ -35,6 +35,19 @@ impl ResolvingScopes {
             parent: Some(parent),
             entries: HashMap::new(),
         })
+    }
+
+    pub fn find_resolvable(&self, scope: ScopeId, segment: &Ident) -> Option<&Resolvable> {
+        let mut scope = &self[scope];
+        loop {
+            match scope.entries.get(segment) {
+                Some(resolvable) => return Some(resolvable),
+                None => match scope.parent {
+                    Some(p) => scope = &self[p],
+                    None => return None,
+                },
+            }
+        }
     }
 }
 
