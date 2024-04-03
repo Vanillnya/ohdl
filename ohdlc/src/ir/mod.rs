@@ -4,7 +4,7 @@ use crate::{message::Message, symbol::Ident, MESSAGES};
 
 use self::{
     modules::Modules,
-    name_resolution::NameResolution,
+    name_resolution::{ImportResult, NameResolution},
     resolving::{Resolvable, ResolvingScopes, ScopeId},
     types::Types,
 };
@@ -43,7 +43,16 @@ impl<'ir> IR<'ir> {
                 let original = match *entry.get() {
                     Resolvable::Type(t) => self.types[t].name(),
                     Resolvable::Module(m) => self.modules[m].name,
-                    Resolvable::Import(i) => *self.name_resolution.imports[i].path.last().unwrap(),
+                    Resolvable::Import(i) => {
+                        let import = &self.name_resolution.imports[i];
+                        match import {
+                            ImportResult::InProgress(i) => *i.path.last().unwrap(),
+                            ImportResult::Finished(_) => {
+                                // TODO: can this happen? :3
+                                panic!("Lixou has to think about this - can this even happen?")
+                            }
+                        }
+                    }
                 };
                 MESSAGES.report(Message::already_in_scope(name.0.get(), name.1, original.1));
             }

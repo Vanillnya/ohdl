@@ -4,7 +4,7 @@ use crate::{
     ast,
     ir::{
         modules::Module,
-        name_resolution::{Import, PathStart},
+        name_resolution::{Import, ImportResult, PathStart},
         resolving::{Resolvable, ScopeId},
         types::{Entity, Enum, Record, Type, TypeId, Variant},
         IR,
@@ -62,7 +62,11 @@ impl<'ir> RoughLowering<'ir, '_> {
                 .arena
                 .alloc_slice_fill_iter(path.iter().map(|seg| seg.0)),
         };
-        let id = self.ir.name_resolution.imports.insert(import);
+        let id = self
+            .ir
+            .name_resolution
+            .imports
+            .insert(ImportResult::InProgress(import));
         self.ir.name_resolution.queue.push_back(id);
         self.ir
             .introduce(scope, path.last().unwrap().0, Resolvable::Import(id));

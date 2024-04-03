@@ -4,7 +4,7 @@ use surotto::{simple::SimpleSurotto, simple_key};
 
 use crate::symbol::Ident;
 
-use super::resolving::ScopeId;
+use super::resolving::{Resolvable, ScopeId};
 
 /// ```ohdl,ignore
 /// mod scope {
@@ -24,6 +24,12 @@ pub struct Import<'ir> {
     pub path: &'ir [Ident],
 }
 
+#[derive(Debug)]
+pub enum ImportResult<'ir> {
+    InProgress(Import<'ir>),
+    Finished(Resolvable),
+}
+
 #[derive(Debug, Clone, Copy)]
 pub enum PathStart {
     /// Search directly in the given scope for the next path segment
@@ -37,7 +43,7 @@ simple_key!(
 
 #[derive(Debug)]
 pub struct NameResolution<'ir> {
-    pub imports: SimpleSurotto<ImportId, Import<'ir>>,
+    pub imports: SimpleSurotto<ImportId, ImportResult<'ir>>,
     pub queue: VecDeque<ImportId>,
 }
 
