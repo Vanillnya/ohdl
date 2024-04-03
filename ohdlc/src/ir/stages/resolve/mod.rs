@@ -23,10 +23,10 @@ impl<'ir> ResolveLowering<'ir, '_> {
             let segment = import.path.first().unwrap();
             println!("{segment:?}");
 
-            let Some(resolvable) = self
-                .ir
-                .resolving_scopes
-                .find_resolvable(import.scope, &segment)
+            let Some(resolvable) =
+                self.ir
+                    .resolving_scopes
+                    .find_resolvable(import.scope, &segment, import.start)
             else {
                 MESSAGES.report(Message::could_not_resolve(*segment));
                 continue;

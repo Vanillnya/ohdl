@@ -7,7 +7,7 @@ use crate::{
     symbol::{Ident, Symbol},
 };
 
-use super::name_resolution::ImportId;
+use super::name_resolution::{ImportId, PathStart};
 
 simple_key!(
     pub struct ScopeId;
@@ -37,14 +37,19 @@ impl ResolvingScopes {
         })
     }
 
-    pub fn find_resolvable(&self, scope: ScopeId, segment: &Ident) -> Option<&Resolvable> {
+    pub fn find_resolvable(
+        &self,
+        scope: ScopeId,
+        segment: &Ident,
+        start: PathStart,
+    ) -> Option<&Resolvable> {
         let mut scope = &self[scope];
         loop {
             match scope.entries.get(segment) {
                 Some(resolvable) => return Some(resolvable),
-                None => match scope.parent {
-                    Some(p) => scope = &self[p],
-                    None => return None,
+                None => match (scope.parent, start) {
+                    (Some(p), PathStart::Indirect) => scope = &self[p],
+                    _ => return None,
                 },
             }
         }
