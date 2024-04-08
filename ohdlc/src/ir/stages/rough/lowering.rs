@@ -4,9 +4,9 @@ use crate::{
     ast,
     ir::{
         modules::Module,
-        name_resolution::{Import, ImportResult},
+        name_resolution::{Import, ImportId, ImportResult},
         resolving::{Resolvable, Resolved, ScopeId},
-        types::{Entity, Enum, Record, Type, TypeId, Variant},
+        types::{Entity, Enum, Field, Port, Record, Type, TypeId, Variant},
         IR,
     },
     span::Spanned,
@@ -28,18 +28,8 @@ impl<'ir> RoughLowering<'ir, '_> {
         match item {
             ast::Item::Use(u) => self.lower_use(scope, u),
             ast::Item::Module(m) => self.lower_mod(scope, m),
-            ast::Item::Entity(e) => self.introduce_type(scope, |type_id| {
-                Type::Entity(Entity {
-                    type_id,
-                    name: e.name,
-                })
-            }),
-            ast::Item::Record(r) => self.introduce_type(scope, |type_id| {
-                Type::Record(Record {
-                    type_id,
-                    name: r.name,
-                })
-            }),
+            ast::Item::Entity(e) => self.lower_entity(scope, e),
+            ast::Item::Record(r) => self.lower_record(scope, r),
             ast::Item::Enum(e) => self.introduce_type(scope, |type_id| {
                 Type::Enum(Enum {
                     type_id,
@@ -54,22 +44,9 @@ impl<'ir> RoughLowering<'ir, '_> {
     }
 
     fn lower_use(&mut self, scope: ScopeId, u: &ast::Use) {
-        let path = &u.path.0;
-        let import = Import {
-            scope,
-            start: u.path.1,
-            path: self
-                .arena
-                .alloc_slice_fill_iter(path.iter().map(|seg| seg.0)),
-        };
-        let id = self
-            .ir
-            .name_resolution
-            .imports
-            .insert(ImportResult::InProgress(import));
-        self.ir.name_resolution.queue.push_back(id);
+        let id = self.schedule_resolution_of_path(scope, &u.path);
         self.ir
-            .introduce(scope, path.last().unwrap().0, Resolvable::Import(id));
+            .introduce(scope, u.path.0.last().unwrap().0, Resolvable::Import(id));
     }
 
     fn lower_mod(&mut self, scope: ScopeId, m: &ast::Module<'_>) {
@@ -90,6 +67,45 @@ impl<'ir> RoughLowering<'ir, '_> {
         }
     }
 
+    fn lower_entity(&mut self, scope: ScopeId, entity: &ast::Entity) {
+        let ports = entity
+            .ports
+            .iter()
+            .map(|port| Port {
+                kind: port.kind.0,
+                name: port.name,
+                ty: self.schedule_resolution_of_path(scope, &port.ty.path),
+            })
+            .collect();
+
+        self.introduce_type(scope, |type_id| {
+            Type::Entity(Entity {
+                type_id,
+                name: entity.name,
+                ports,
+            })
+        })
+    }
+
+    fn lower_record(&mut self, scope: ScopeId, record: &ast::Record) {
+        let fields = record
+            .fields
+            .iter()
+            .map(|field| Field {
+                name: field.name,
+                ty: self.schedule_resolution_of_path(scope, &field.ty.path),
+            })
+            .collect();
+
+        self.introduce_type(scope, |type_id| {
+            Type::Record(Record {
+                type_id,
+                name: record.name,
+                fields,
+            })
+        })
+    }
+
     fn introduce_type<F>(&mut self, scope: ScopeId, f: F)
     where
         F: FnOnce(TypeId) -> Type<'ir>,
@@ -99,5 +115,22 @@ impl<'ir> RoughLowering<'ir, '_> {
         let name = self.ir.types[id].name();
         self.ir
             .introduce(scope, name, Resolvable::Resolved(Resolved::Type(id)));
+    }
+
+    fn schedule_resolution_of_path(&mut self, scope: ScopeId, path: &ast::Path) -> ImportId {
+        let import = Import {
+            scope,
+            start: path.1,
+            path: self
+                .arena
+                .alloc_slice_fill_iter(path.0.iter().map(|seg| seg.0)),
+        };
+        let id = self
+            .ir
+            .name_resolution
+            .imports
+            .insert(ImportResult::InProgress(import));
+        self.ir.name_resolution.queue.push_back(id);
+        id
     }
 }

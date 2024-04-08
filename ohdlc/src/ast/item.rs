@@ -39,7 +39,7 @@ pub struct Port {
     pub ty: Spanned<Type>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum PortKind {
     Input,
     Output,

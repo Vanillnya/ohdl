@@ -42,7 +42,7 @@ impl<'ir> ResolveLowering<'ir, '_> {
                 Resolvable::Import(i) => {
                     match &self.ir.name_resolution.imports[i] {
                         ImportResult::InProgress(_) => {
-                            // TODO: check if we haven't done any progress since last time to prevent circular infinite load
+                            // TODO: check if we (or the subsubsubimport hek) haven't done any progress since last time to prevent circular infinite load
                             self.ir.name_resolution.queue.push_back(id);
                             None
                         }

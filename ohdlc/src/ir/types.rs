@@ -2,7 +2,9 @@ use deref_derive::{Deref, DerefMut};
 use std::fmt::Debug;
 use surotto::{simple::SimpleSurotto, simple_key};
 
-use crate::symbol::Ident;
+use crate::{ast::PortKind, symbol::Ident};
+
+use super::name_resolution::ImportId;
 
 simple_key!(
     pub struct TypeId;
@@ -46,14 +48,28 @@ impl Type<'_> {
 pub struct Entity {
     pub type_id: TypeId,
     pub name: Ident,
-    // TODO: ports
+    pub ports: Vec<Port>,
+}
+
+#[derive(Debug)]
+pub struct Port {
+    // TODO: we should agree on whether to use ast types in ir or ir types in ast, not both.
+    pub kind: PortKind,
+    pub name: Ident,
+    pub ty: ImportId,
 }
 
 #[derive(Debug)]
 pub struct Record {
     pub type_id: TypeId,
     pub name: Ident,
-    // TODO: fields
+    pub fields: Vec<Field>,
+}
+
+#[derive(Debug)]
+pub struct Field {
+    pub name: Ident,
+    pub ty: ImportId,
 }
 
 #[derive(Debug)]
