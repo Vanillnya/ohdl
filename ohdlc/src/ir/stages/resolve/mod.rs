@@ -59,6 +59,7 @@ impl<'ir> ResolveLowering<'ir, '_> {
                 Resolvable::Resolved(r) => Some(r),
             };
 
+            // TODO: do we need an else branch here?
             if let Some(r) = resolved {
                 match r {
                     Resolved::Type(t) => {
