@@ -23,7 +23,7 @@ impl<'ir> ResolveLowering<'ir, '_> {
             let import = match import {
                 ImportResult::InProgress(i) => i,
                 ImportResult::Finished(_) => {
-                    unreachable!("finished imports shouldn't scheduled")
+                    unreachable!("finished imports shouldn't be scheduled")
                 }
             };
             let segment = import.path.first().unwrap();
