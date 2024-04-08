@@ -1,3 +1,5 @@
+use std::cell::RefCell;
+
 use bumpalo::Bump;
 
 use crate::{
@@ -124,12 +126,13 @@ impl<'ir> RoughLowering<'ir, '_> {
             path: self
                 .arena
                 .alloc_slice_fill_iter(path.0.iter().map(|seg| seg.0)),
+            progress: true,
         };
         let id = self
             .ir
             .name_resolution
             .imports
-            .insert(ImportResult::InProgress(import));
+            .insert(RefCell::new(ImportResult::InProgress(import)));
         self.ir.name_resolution.queue.push_back(id);
         id
     }

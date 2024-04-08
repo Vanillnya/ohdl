@@ -1,4 +1,4 @@
-use std::collections::VecDeque;
+use std::{cell::RefCell, collections::VecDeque};
 
 use surotto::{simple::SimpleSurotto, simple_key};
 
@@ -22,6 +22,8 @@ pub struct Import<'ir> {
     pub start: PathStart,
     /// The path we have to take from the source
     pub path: &'ir [Ident],
+    /// Flag whether we've achieved any progress on this import
+    pub progress: bool,
 }
 
 #[derive(Debug)]
@@ -36,7 +38,8 @@ simple_key!(
 
 #[derive(Debug)]
 pub struct NameResolution<'ir> {
-    pub imports: SimpleSurotto<ImportId, ImportResult<'ir>>,
+    // TODO: replace with UnsafeCell
+    pub imports: SimpleSurotto<ImportId, RefCell<ImportResult<'ir>>>,
     pub queue: VecDeque<ImportId>,
 }
 

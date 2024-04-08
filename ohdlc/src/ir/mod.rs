@@ -43,7 +43,7 @@ impl<'ir> IR<'ir> {
                 let original = match *entry.get() {
                     Resolvable::Resolved(r) => self.name_of_resolved(r),
                     Resolvable::Import(i) => {
-                        let import = &self.name_resolution.imports[i];
+                        let import = &*self.name_resolution.imports[i].borrow();
                         match import {
                             ImportResult::InProgress(i) => *i.path.last().unwrap(),
                             ImportResult::Finished(r) => self.name_of_resolved(*r),

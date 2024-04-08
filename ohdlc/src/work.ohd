@@ -1,4 +1,4 @@
-//use ::std::Logical;
+use ::std::Logical;
 
 record MyRecord {
     a: Logical,

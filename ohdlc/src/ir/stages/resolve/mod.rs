@@ -19,8 +19,8 @@ pub struct ResolveLowering<'ir, 'b> {
 impl<'ir> ResolveLowering<'ir, '_> {
     pub fn lower(self) {
         while let Some(id) = self.ir.name_resolution.queue.pop_front() {
-            let import = &self.ir.name_resolution.imports[id];
-            let import = match import {
+            let import_res = &mut *self.ir.name_resolution.imports[id].borrow_mut();
+            let import = match import_res {
                 ImportResult::InProgress(i) => i,
                 ImportResult::Finished(_) => {
                     unreachable!("finished imports shouldn't be scheduled")
@@ -28,6 +28,8 @@ impl<'ir> ResolveLowering<'ir, '_> {
             };
             let segment = import.path.first().unwrap();
             println!("{segment:?}");
+
+            import.progress = false;
 
             let Some(resolvable) =
                 self.ir
@@ -40,11 +42,16 @@ impl<'ir> ResolveLowering<'ir, '_> {
 
             let resolved = match *resolvable {
                 Resolvable::Import(i) => {
-                    match &self.ir.name_resolution.imports[i] {
-                        ImportResult::InProgress(_) => {
-                            // TODO: check if we (or the subsubsubimport hek) haven't done any progress since last time to prevent circular infinite load
-                            self.ir.name_resolution.queue.push_back(id);
-                            None
+                    // TODO: when replacing with UnsafeCell, make sure that i != id
+                    match &mut *self.ir.name_resolution.imports[i].borrow_mut() {
+                        ImportResult::InProgress(ipi) => {
+                            if ipi.progress {
+                                import.progress = true;
+                                self.ir.name_resolution.queue.push_back(id);
+                                None
+                            } else {
+                                None
+                            }
                         }
                         ImportResult::Finished(r) => Some(*r),
                     }
@@ -56,22 +63,14 @@ impl<'ir> ResolveLowering<'ir, '_> {
                 match r {
                     Resolved::Type(t) => {
                         // TODO: check if it is not the last thing
-                        self.ir.name_resolution.imports[id] =
-                            ImportResult::Finished(Resolved::Type(t));
+                        *import_res = ImportResult::Finished(Resolved::Type(t));
                     }
                     Resolved::Module(m) => {
                         let module = &self.ir.modules[m];
                         let sub_path = &import.path[1..];
                         if sub_path.is_empty() {
-                            self.ir.name_resolution.imports[id] =
-                                ImportResult::Finished(Resolved::Module(m));
+                            *import_res = ImportResult::Finished(Resolved::Module(m));
                         } else {
-                            let import = match &mut self.ir.name_resolution.imports[id] {
-                                ImportResult::InProgress(i) => i,
-                                ImportResult::Finished(_) => {
-                                    unreachable!("we already checked that earlier")
-                                }
-                            };
                             import.scope = module.scope;
                             import.start = PathStart::Direct;
                             import.path = sub_path;
