@@ -8,19 +8,36 @@ use crate::{
 
 use super::{PResult, Parser};
 
+macro_rules! branch {
+    ($self:ident $($variant:path => { $($b:tt)* }),+,) => {
+        $(
+            {
+                let state = $self.state();
+                if let Ok(branch) = { $($b)* } {
+                    return Ok($variant(branch));
+                } else {
+                    $self.recover_state(state);
+                }
+            }
+        )+
+        {
+            // TODO: better errors
+            println!("shit");
+            Err(vec![])
+        }
+    };
+}
+
 impl<'s, 'a> Parser<'s, 'a> {
     /// ### Parses an [`Stmt`]
     pub fn parse_stmt(&mut self) -> PResult<Stmt<'a>> {
-        if self.eat_token(TokenKind::KwPlace)? {
-            Ok(Stmt::Place(self.parse_stmt_place()?))
-        } else {
-            Ok(Stmt::Assign(self.parse_stmt_assign()?))
+        branch! { self
+            Stmt::Place => { self.parse_stmt_place() },
+            Stmt::Assign => { self.parse_stmt_assign() },
         }
     }
 
     /// ### Parses an [`PlaceStmt`]
-    ///
-    /// Assumes that the `place` keyword was already consumed.
     pub fn parse_stmt_place(&mut self) -> PResult<PlaceStmt<'a>> {
         let entity_ty = spanned!(self { self.parse_type()? });
         self.consume(TokenKind::OpenParen)?;

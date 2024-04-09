@@ -54,14 +54,14 @@ entity FullAdder {
 }
 
 arch RTL for FullAdder {
-    place HalfAdder(RTL) {
+    HalfAdder(RTL) {
         a <= a,
         b <= b,
         o => signal s,
         c => signal cb,
     }
 
-    place HalfAdder(RTL) {
+    HalfAdder(RTL) {
         a <= s,
         b <= ci,
         o => o,

@@ -7,7 +7,7 @@ use crate::{
 #[derive(Debug)]
 pub enum Stmt<'a> {
     /// ```ohdl
-    /// place MyEntity::MyArch {
+    /// MyEntity::MyArch {
     ///     i <= i,
     ///     o => o,
     /// }

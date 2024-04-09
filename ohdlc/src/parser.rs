@@ -19,6 +19,8 @@ pub mod ty;
 
 pub type PResult<T> = Result<T, Vec<Message>>;
 
+pub struct ParserState(usize);
+
 pub struct Parser<'s, 'a> {
     pub arena: &'a Bump,
     pub source: Source<'s>,
@@ -67,6 +69,16 @@ impl<'s, 'a> Parser<'s, 'a> {
         let val = self.current()?;
         self.bump();
         Ok(val)
+    }
+
+    #[inline(always)]
+    fn state(&self) -> ParserState {
+        ParserState(self.cursor)
+    }
+
+    #[inline(always)]
+    fn recover_state(&mut self, state: ParserState) {
+        self.cursor = state.0;
     }
 
     #[inline(always)]
