@@ -3,7 +3,7 @@ use crate::{
     lexer::TokenKind,
     message::Message,
     span::{Spanned, WithSpan},
-    spanned, MESSAGES,
+    spanned,
 };
 
 use super::{PResult, Parser};
@@ -18,14 +18,11 @@ impl<'s, 'a> Parser<'s, 'a> {
             Spanned(TokenKind::KwArch, _) => self.parse_arch().map(Item::Arch),
             Spanned(TokenKind::KwRecord, _) => self.parse_record().map(Item::Record),
             Spanned(TokenKind::KwEnum, _) => self.parse_enum().map(Item::Enum),
-            token => {
-                MESSAGES.report(Message::unexpected_token(
-                    token.1,
-                    "one of 'use', 'mod', 'entity', 'arch', 'record', 'enum'",
-                    token.0,
-                ));
-                Err(())
-            }
+            token => Err(vec![Message::unexpected_token(
+                token.1,
+                "one of 'use', 'mod', 'entity', 'arch', 'record', 'enum'",
+                token.0,
+            )]),
         }
     }
 
@@ -72,8 +69,11 @@ impl<'s, 'a> Parser<'s, 'a> {
                 Spanned(TokenKind::KwIn, s) => PortKind::Input.with_span(s),
                 Spanned(TokenKind::KwOut, s) => PortKind::Output.with_span(s),
                 token => {
-                    MESSAGES.report(Message::unexpected_token(token.1, "'in' or 'out'", token.0));
-                    return Err(());
+                    return Err(vec![Message::unexpected_token(
+                        token.1,
+                        "'in' or 'out'",
+                        token.0,
+                    )]);
                 }
             };
 

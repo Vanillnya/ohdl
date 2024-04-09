@@ -44,8 +44,14 @@ fn main() -> Result<(), ()> {
     let ir_arena = Bump::new();
 
     let root = parser.parse();
-    report_messages(&source);
-    let root = root?;
+    let root = match root {
+        Ok(tree) => tree,
+        Err(messages) => {
+            MESSAGES.extend(messages);
+            report_messages(&source);
+            return Err(());
+        }
+    };
 
     let mut ir = IR::new();
 

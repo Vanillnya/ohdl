@@ -20,6 +20,10 @@ impl Messages {
         self.messages.lock().unwrap().push(message);
     }
 
+    pub fn extend(&self, mut messages: Vec<Message>) {
+        self.messages.lock().unwrap().append(&mut messages);
+    }
+
     pub fn drain<F>(&self, f: F)
     where
         F: Fn(Message),

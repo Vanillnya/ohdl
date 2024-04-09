@@ -9,7 +9,7 @@ use crate::{
     span::{Span, Spanned, WithSpan},
     spanned,
     symbol::{Ident, Symbol},
-    Source, MESSAGES,
+    Source,
 };
 
 pub mod expr;
@@ -17,7 +17,7 @@ pub mod item;
 pub mod stmt;
 pub mod ty;
 
-pub type PResult<T> = Result<T, ()>;
+pub type PResult<T> = Result<T, Vec<Message>>;
 
 pub struct Parser<'s, 'a> {
     pub arena: &'a Bump,
@@ -56,12 +56,9 @@ impl<'s, 'a> Parser<'s, 'a> {
     fn current(&mut self) -> PResult<Spanned<TokenKind>> {
         match self.lexer.0.get(self.cursor) {
             Some(val) => Ok(*val),
-            None => {
-                MESSAGES.report(Message::unexpected_end(
-                    self.source.1.len()..self.source.1.len(),
-                ));
-                Err(())
-            }
+            None => Err(vec![Message::unexpected_end(
+                self.source.1.len()..self.source.1.len(),
+            )]),
         }
     }
 
@@ -104,12 +101,11 @@ impl<'s, 'a> Parser<'s, 'a> {
         if token.0 == kind {
             Ok(token)
         } else {
-            MESSAGES.report(Message::unexpected_token(
+            Err(vec![Message::unexpected_token(
                 token.1,
                 format!("{kind:?}"),
                 token.0,
-            ));
-            Err(())
+            )])
         }
     }
 
