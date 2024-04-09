@@ -1,5 +1,13 @@
 use ::std::Logical;
 
+mod x {
+    use y;
+}
+
+mod y {
+    use x;
+}
+
 record MyRecord {
     a: Logical,
     b: Logical,

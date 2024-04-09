@@ -43,15 +43,20 @@ impl ResolvingScopes {
         scope: ScopeId,
         segment: &Ident,
         start: PathStart,
+        id: ImportId,
     ) -> Option<&Resolvable> {
         let mut scope = &self[scope];
         loop {
             match scope.entries.get(segment) {
-                Some(resolvable) => return Some(resolvable),
+                Some(Resolvable::Import(i)) if *i == id => match (scope.parent, start) {
+                    (Some(p), PathStart::Indirect) => scope = &self[p],
+                    _ => return None,
+                },
                 None => match (scope.parent, start) {
                     (Some(p), PathStart::Indirect) => scope = &self[p],
                     _ => return None,
                 },
+                Some(resolvable) => return Some(resolvable),
             }
         }
     }

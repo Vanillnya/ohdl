@@ -34,7 +34,7 @@ impl<'ir> ResolveLowering<'ir, '_> {
             let Some(resolvable) =
                 self.ir
                     .resolving_scopes
-                    .find_resolvable(import.scope, &segment, import.start)
+                    .find_resolvable(import.scope, &segment, import.start, id)
             else {
                 MESSAGES.report(Message::could_not_resolve(*segment));
                 continue;
@@ -42,7 +42,9 @@ impl<'ir> ResolveLowering<'ir, '_> {
 
             let resolved = match *resolvable {
                 Resolvable::Import(i) => {
-                    // TODO: when replacing with UnsafeCell, make sure that i != id
+                    if i == id {
+                        panic!("Hek {segment:?} {resolvable:?}");
+                    }
                     match &mut *self.ir.name_resolution.imports[i].borrow_mut() {
                         ImportResult::InProgress(ipi) => {
                             if ipi.progress {
