@@ -50,6 +50,7 @@ impl<'ir> ResolveLowering<'ir, '_> {
                                 self.ir.name_resolution.queue.push_back(id);
                                 None
                             } else {
+                                MESSAGES.report(Message::stuck_on_import(*segment, ipi.span));
                                 None
                             }
                         }

@@ -17,7 +17,7 @@ pub enum Item<'a> {
 
 #[derive(Debug)]
 pub struct Use {
-    pub path: Path,
+    pub path: Spanned<Path>,
 }
 
 #[derive(Debug)]

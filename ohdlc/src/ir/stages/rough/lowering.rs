@@ -48,7 +48,7 @@ impl<'ir> RoughLowering<'ir, '_> {
     fn lower_use(&mut self, scope: ScopeId, u: &ast::Use) {
         let id = self.schedule_resolution_of_path(scope, &u.path);
         self.ir
-            .introduce(scope, u.path.0.last().unwrap().0, Resolvable::Import(id));
+            .introduce(scope, u.path.0 .0.last().unwrap().0, Resolvable::Import(id));
     }
 
     fn lower_mod(&mut self, scope: ScopeId, m: &ast::Module<'_>) {
@@ -119,7 +119,12 @@ impl<'ir> RoughLowering<'ir, '_> {
             .introduce(scope, name, Resolvable::Resolved(Resolved::Type(id)));
     }
 
-    fn schedule_resolution_of_path(&mut self, scope: ScopeId, path: &ast::Path) -> ImportId {
+    fn schedule_resolution_of_path(
+        &mut self,
+        scope: ScopeId,
+        path: &Spanned<ast::Path>,
+    ) -> ImportId {
+        let Spanned(path, span) = path;
         let import = Import {
             scope,
             start: path.1,
@@ -127,6 +132,7 @@ impl<'ir> RoughLowering<'ir, '_> {
                 .arena
                 .alloc_slice_fill_iter(path.0.iter().map(|seg| seg.0)),
             progress: true,
+            span: *span,
         };
         let id = self
             .ir

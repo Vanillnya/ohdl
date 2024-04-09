@@ -2,7 +2,7 @@ use std::{cell::RefCell, collections::VecDeque};
 
 use surotto::{simple::SimpleSurotto, simple_key};
 
-use crate::{ast::PathStart, symbol::Ident};
+use crate::{ast::PathStart, span::Span, symbol::Ident};
 
 use super::resolving::{Resolved, ScopeId};
 
@@ -24,6 +24,8 @@ pub struct Import<'ir> {
     pub path: &'ir [Ident],
     /// Flag whether we've achieved any progress on this import
     pub progress: bool,
+    /// The whole import span
+    pub span: Span,
 }
 
 #[derive(Debug)]

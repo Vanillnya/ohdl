@@ -136,4 +136,24 @@ impl Message {
             location: span,
         }
     }
+
+    pub fn stuck_on_import(import_segment: Ident, sub_import: Span) -> Self {
+        let segment_span = import_segment.1;
+        let segment = import_segment.0.get();
+        Message {
+            kind: ReportKind::Error,
+            message: format!("Stuck on importing {segment}"),
+            labels: vec![
+                Label {
+                    span: segment_span,
+                    message: "This import can't get any further...".to_owned(),
+                },
+                Label {
+                    span: sub_import,
+                    message: "..because this import doesn't make any progress".to_owned(),
+                },
+            ],
+            location: segment_span,
+        }
+    }
 }

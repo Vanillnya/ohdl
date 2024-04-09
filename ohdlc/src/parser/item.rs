@@ -33,7 +33,7 @@ impl<'s, 'a> Parser<'s, 'a> {
     ///
     /// Assumes that the `use` keyword was already consumed.
     pub fn parse_use(&mut self) -> PResult<Use> {
-        let path = self.parse_path()?;
+        let path = spanned!(self { self.parse_path()? });
         self.consume(TokenKind::Semicolon)?;
         Ok(Use { path })
     }
