@@ -7,7 +7,7 @@ use parser::Parser;
 
 use crate::{
     ir::{
-        stages::{resolve::ResolveLowering, rough::lowering::RoughLowering},
+        stages::{resolve::ResolveLowering, unresolved::UnresolvedLowering},
         IR,
     },
     lexer::Lexer,
@@ -56,11 +56,11 @@ fn main() -> Result<(), ()> {
     let mut ir = IR::new();
 
     {
-        let rough = RoughLowering {
+        let unresolved = UnresolvedLowering {
             arena: &ir_arena,
             ir: &mut ir,
         };
-        rough.lower(&root);
+        unresolved.lower(&root);
         report_messages(&source);
     }
 

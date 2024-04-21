@@ -1,5 +1,5 @@
-pub mod rough;
+pub mod unresolved;
 
 pub mod resolve;
 
-pub mod fine_types;
+pub mod resolved;

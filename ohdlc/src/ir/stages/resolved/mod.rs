@@ -2,11 +2,11 @@ use bumpalo::Bump;
 
 use crate::ir::IR;
 
-pub struct FineTypesLowering<'ir, 'b> {
+pub struct ResolvedLowering<'ir, 'b> {
     pub arena: &'ir Bump,
     pub ir: &'b mut IR<'ir>,
 }
 
-impl<'ir> FineTypesLowering<'ir, '_> {
+impl<'ir> ResolvedLowering<'ir, '_> {
     pub fn lower(self) {}
 }

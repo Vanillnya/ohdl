@@ -1,5 +1,5 @@
 # Stages
 
-1. Rough
+1. Unresolved
 2. Resolve
-3. Fine Types
+3. Resolved
