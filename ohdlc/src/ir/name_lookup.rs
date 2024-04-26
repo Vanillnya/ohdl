@@ -9,30 +9,31 @@ use crate::{
     ast::PathStart,
     ir::{modules::ModuleId, types::TypeId},
     message::Message,
+    span::Span,
     symbol::{Ident, Symbol},
     MESSAGES,
 };
 
-use super::{
-    name_resolution::{ImportId, ImportResult, NameResolution},
-    registry::Registry,
-};
+use super::{name_resolution::ImportId, registry::Registry};
 
 simple_key!(
     pub struct ScopeId;
 );
 
+pub type PreImportNameLookup = NameLookup<Resolvable>;
+pub type PostImportNameLookup = NameLookup<Resolved>;
+
 #[derive(Debug, Deref, DerefMut)]
-pub struct NameLookup {
+pub struct NameLookup<L> {
     #[deref]
-    pub scopes: SimpleSurotto<ScopeId, ResolvingScope>,
+    pub scopes: SimpleSurotto<ScopeId, LookupScope<L>>,
     pub root: ScopeId,
 }
 
-impl NameLookup {
+impl<L> NameLookup<L> {
     pub fn new() -> Self {
         let mut scopes = SimpleSurotto::with_capacity(1);
-        let root = scopes.insert(ResolvingScope {
+        let root = scopes.insert(LookupScope {
             parent: None,
             entries: HashMap::new(),
         });
@@ -40,59 +41,37 @@ impl NameLookup {
     }
 
     pub fn sub_scope(&mut self, parent: ScopeId) -> ScopeId {
-        self.scopes.insert(ResolvingScope {
+        self.scopes.insert(LookupScope {
             parent: Some(parent),
             entries: HashMap::new(),
         })
     }
 
-    pub fn find_resolvable(
-        &self,
-        scope: ScopeId,
-        segment: &Ident,
-        start: PathStart,
-        id: ImportId,
-    ) -> Option<&Resolvable> {
+    pub fn lookup(&self, scope: ScopeId, lookup: &Ident, start: PathStart) -> Option<&L> {
         let mut scope = &self[scope];
         loop {
-            match scope.entries.get(segment) {
-                Some(Resolvable::Import(i)) if *i == id => match (scope.parent, start) {
-                    (Some(p), PathStart::Indirect) => scope = &self[p],
-                    _ => return None,
-                },
+            match scope.entries.get(lookup) {
                 None => match (scope.parent, start) {
                     (Some(p), PathStart::Indirect) => scope = &self[p],
                     _ => return None,
                 },
-                Some(resolvable) => return Some(resolvable),
+                Some((_, l)) => return Some(l),
             }
         }
     }
 
-    pub fn introduce(
-        &mut self,
-        scope: ScopeId,
-        name: Ident,
-        resolvable: Resolvable,
-        registry: &Registry<'_>,
-        name_resolution: &NameResolution<'_>,
-    ) {
+    pub fn introduce(&mut self, scope: ScopeId, name: Ident, lookup: L) {
         match self[scope].entries.entry(name.0) {
             Entry::Vacant(entry) => {
-                entry.insert(resolvable);
+                entry.insert((name.1, lookup));
             }
             Entry::Occupied(entry) => {
-                let original = match *entry.get() {
-                    Resolvable::Resolved(r) => self.name_of_resolved(r, registry),
-                    Resolvable::Import(i) => {
-                        let import = &*name_resolution.imports[i].borrow();
-                        match import {
-                            ImportResult::InProgress(i) => *i.path.last().unwrap(),
-                            ImportResult::Finished(r) => self.name_of_resolved(*r, registry),
-                        }
-                    }
-                };
-                MESSAGES.report(Message::already_in_scope(name.0.get(), name.1, original.1));
+                let (original_span, _) = entry.get();
+                MESSAGES.report(Message::already_in_scope(
+                    name.0.get(),
+                    name.1,
+                    *original_span,
+                ));
             }
         }
     }
@@ -106,9 +85,9 @@ impl NameLookup {
 }
 
 #[derive(Debug)]
-pub struct ResolvingScope {
+pub struct LookupScope<L> {
     pub parent: Option<ScopeId>,
-    pub entries: HashMap<Symbol, Resolvable>,
+    pub entries: HashMap<Symbol, (Span, L)>,
 }
 
 #[derive(Debug, Clone, Copy)]

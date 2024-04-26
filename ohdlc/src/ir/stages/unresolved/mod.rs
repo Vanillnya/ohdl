@@ -6,7 +6,7 @@ use crate::{
     ast,
     ir::{
         modules::Module,
-        name_lookup::{NameLookup, Resolvable, Resolved, ScopeId},
+        name_lookup::{PreImportNameLookup, Resolvable, Resolved, ScopeId},
         name_resolution::{Import, ImportId, ImportResult, NameResolution},
         registry::Registry,
         types::{Entity, Enum, Field, Port, Record, Type, TypeId, Variant},
@@ -17,7 +17,7 @@ use crate::{
 pub struct UnresolvedLowering<'ir, 'b> {
     pub arena: &'ir Bump,
     pub registry: &'b mut Registry<'ir>,
-    pub name_lookup: &'b mut NameLookup,
+    pub name_lookup: &'b mut PreImportNameLookup,
     pub name_resolution: &'b mut NameResolution<'ir>,
 }
 
@@ -49,13 +49,8 @@ impl<'ir> UnresolvedLowering<'ir, '_> {
 
     fn lower_use(&mut self, scope: ScopeId, u: &ast::Use) {
         let id = self.schedule_resolution_of_path(scope, &u.path);
-        self.name_lookup.introduce(
-            scope,
-            u.path.0 .0.last().unwrap().0,
-            Resolvable::Import(id),
-            self.registry,
-            self.name_resolution,
-        );
+        self.name_lookup
+            .introduce(scope, u.path.0 .0.last().unwrap().0, Resolvable::Import(id));
     }
 
     fn lower_mod(&mut self, scope: ScopeId, m: &ast::Module<'_>) {
@@ -69,8 +64,6 @@ impl<'ir> UnresolvedLowering<'ir, '_> {
             scope,
             m.name,
             Resolvable::Resolved(Resolved::Module(module)),
-            self.registry,
-            self.name_resolution,
         );
 
         for i in &m.items {
@@ -124,13 +117,8 @@ impl<'ir> UnresolvedLowering<'ir, '_> {
         let id = self.registry.types.insert_with(f);
 
         let name = self.registry.types[id].name();
-        self.name_lookup.introduce(
-            scope,
-            name,
-            Resolvable::Resolved(Resolved::Type(id)),
-            self.registry,
-            self.name_resolution,
-        );
+        self.name_lookup
+            .introduce(scope, name, Resolvable::Resolved(Resolved::Type(id)));
     }
 
     fn schedule_resolution_of_path(

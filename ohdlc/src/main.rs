@@ -69,16 +69,17 @@ fn main() -> Result<(), ()> {
         report_messages(&source);
     }
 
-    {
+    let name_lookup = {
         let resolve = ResolvingLowering {
             registry: &registry,
-            name_lookup: &name_lookup,
+            name_lookup: name_lookup,
             queue: name_resolution.imports.keys().collect(),
             name_resolution: &mut name_resolution,
         };
-        resolve.lower();
+        let lookup = resolve.lower();
         report_messages(&source);
-    }
+        lookup
+    };
 
     for import in name_resolution.imports.values() {
         println!("{import:?}");
