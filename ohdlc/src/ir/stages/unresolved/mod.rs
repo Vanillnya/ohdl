@@ -8,31 +8,15 @@ use crate::{
         modules::Module,
         name_resolution::{Import, ImportId, ImportResult},
         resolving::{Resolvable, Resolved, ScopeId},
-        stage::IRStage,
         types::{Entity, Enum, Field, Port, Record, Type, TypeId, Variant},
         IR,
     },
     span::Spanned,
 };
 
-pub struct UnresolvedStage;
-
-impl IRStage for UnresolvedStage {
-    type ResolvingEntry = Resolvable;
-}
-
-impl UnresolvedStage {
-    pub fn lower<'ir>(arena: &'ir Bump, ast: &[Spanned<ast::Item<'_>>]) -> IR<'ir, Self> {
-        let mut ir = IR::<'ir, Self>::new();
-        let mut lowering = UnresolvedLowering { arena, ir: &mut ir };
-        lowering.lower(ast);
-        ir
-    }
-}
-
 pub struct UnresolvedLowering<'ir, 'b> {
     pub arena: &'ir Bump,
-    pub ir: &'b mut IR<'ir, UnresolvedStage>,
+    pub ir: &'b mut IR<'ir>,
 }
 
 impl<'ir> UnresolvedLowering<'ir, '_> {

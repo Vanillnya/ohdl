@@ -1,34 +1,16 @@
-use bumpalo::Bump;
-
 use crate::{
     ast::PathStart,
     ir::{
-        name_resolution::{ImportResult, NameResolution},
+        name_resolution::ImportResult,
         resolving::{Resolvable, Resolved},
-        stage::IRStage,
         IR,
     },
     message::Message,
     MESSAGES,
 };
 
-use super::unresolved::UnresolvedStage;
-
-pub struct ResolvingStage;
-
-impl IRStage for ResolvingStage {
-    type ResolvingEntry = Resolvable;
-}
-
-impl ResolvingStage {
-    pub fn lower<'ir>(prev_ir: IR<'ir, UnresolvedStage>) -> IR<'ir, Self> {
-        let ir: IR<'ir, ResolvingStage> = prev_ir.into();
-        todo!()
-    }
-}
-
 pub struct ResolvingLowering<'ir, 'b> {
-    pub ir: &'b mut IR<'ir, UnresolvedStage>,
+    pub ir: &'b mut IR<'ir>,
 }
 
 impl<'ir> ResolvingLowering<'ir, '_> {

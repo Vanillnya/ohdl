@@ -7,7 +7,7 @@ use parser::Parser;
 
 use crate::{
     ir::{
-        stages::{resolving::ResolveLowering, unresolved::UnresolvedLowering},
+        stages::{resolving::ResolvingLowering, unresolved::UnresolvedLowering},
         IR,
     },
     lexer::Lexer,
@@ -65,10 +65,7 @@ fn main() -> Result<(), ()> {
     }
 
     {
-        let resolve = ResolveLowering {
-            arena: &ir_arena,
-            ir: &mut ir,
-        };
+        let resolve = ResolvingLowering { ir: &mut ir };
         resolve.lower();
         report_messages(&source);
     }

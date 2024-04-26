@@ -8,20 +8,20 @@ use crate::{
     symbol::{Ident, Symbol},
 };
 
-use super::{name_resolution::ImportId, stage::IRStage};
+use super::name_resolution::ImportId;
 
 simple_key!(
     pub struct ScopeId;
 );
 
 #[derive(Debug, Deref, DerefMut)]
-pub struct ResolvingScopes<S: IRStage> {
+pub struct ResolvingScopes {
     #[deref]
-    pub scopes: SimpleSurotto<ScopeId, ResolvingScope<S>>,
+    pub scopes: SimpleSurotto<ScopeId, ResolvingScope>,
     pub root: ScopeId,
 }
 
-impl<S: IRStage> ResolvingScopes<S> {
+impl ResolvingScopes {
     pub fn new() -> Self {
         let mut scopes = SimpleSurotto::with_capacity(1);
         let root = scopes.insert(ResolvingScope {
@@ -39,7 +39,7 @@ impl<S: IRStage> ResolvingScopes<S> {
     }
 }
 
-impl<S: IRStage<ResolvingEntry = Resolvable>> ResolvingScopes<S> {
+impl ResolvingScopes {
     pub fn find_resolvable(
         &self,
         scope: ScopeId,
@@ -65,9 +65,9 @@ impl<S: IRStage<ResolvingEntry = Resolvable>> ResolvingScopes<S> {
 }
 
 #[derive(Debug)]
-pub struct ResolvingScope<S: IRStage> {
+pub struct ResolvingScope {
     pub parent: Option<ScopeId>,
-    pub entries: HashMap<Symbol, S::ResolvingEntry>,
+    pub entries: HashMap<Symbol, Resolvable>,
 }
 
 #[derive(Debug, Clone, Copy)]
