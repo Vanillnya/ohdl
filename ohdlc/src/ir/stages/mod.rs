@@ -1,5 +1,5 @@
 pub mod unresolved;
 
-pub mod resolve;
+pub mod resolving;
 
 pub mod resolved;

@@ -3,20 +3,35 @@ use bumpalo::Bump;
 use crate::{
     ast::PathStart,
     ir::{
-        name_resolution::ImportResult,
+        name_resolution::{ImportResult, NameResolution},
         resolving::{Resolvable, Resolved},
+        stage::IRStage,
         IR,
     },
     message::Message,
     MESSAGES,
 };
 
-pub struct ResolveLowering<'ir, 'b> {
-    pub arena: &'ir Bump,
-    pub ir: &'b mut IR<'ir>,
+use super::unresolved::UnresolvedStage;
+
+pub struct ResolvingStage;
+
+impl IRStage for ResolvingStage {
+    type ResolvingEntry = Resolvable;
 }
 
-impl<'ir> ResolveLowering<'ir, '_> {
+impl ResolvingStage {
+    pub fn lower<'ir>(prev_ir: IR<'ir, UnresolvedStage>) -> IR<'ir, Self> {
+        let ir: IR<'ir, ResolvingStage> = prev_ir.into();
+        todo!()
+    }
+}
+
+pub struct ResolvingLowering<'ir, 'b> {
+    pub ir: &'b mut IR<'ir, UnresolvedStage>,
+}
+
+impl<'ir> ResolvingLowering<'ir, '_> {
     pub fn lower(self) {
         while let Some(id) = self.ir.name_resolution.queue.pop_front() {
             let import_res = &mut *self.ir.name_resolution.imports[id].borrow_mut();

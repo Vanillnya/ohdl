@@ -6,25 +6,27 @@ use self::{
     modules::Modules,
     name_resolution::{ImportResult, NameResolution},
     resolving::{Resolvable, Resolved, ResolvingScopes, ScopeId},
+    stage::IRStage,
     types::Types,
 };
 
 mod modules;
 mod name_resolution;
 mod resolving;
+mod stage;
 mod types;
 
 pub mod stages;
 
 #[derive(Debug)]
-pub struct IR<'ir> {
+pub struct IR<'ir, S: IRStage> {
     pub types: Types<'ir>,
     pub modules: Modules,
-    pub resolving_scopes: ResolvingScopes,
+    pub resolving_scopes: ResolvingScopes<S>,
     pub name_resolution: NameResolution<'ir>,
 }
 
-impl<'ir> IR<'ir> {
+impl<'ir, S: IRStage> IR<'ir, S> {
     pub fn new() -> Self {
         Self {
             types: Types::default(),
@@ -33,7 +35,9 @@ impl<'ir> IR<'ir> {
             name_resolution: NameResolution::new(),
         }
     }
+}
 
+impl<'ir, S: IRStage<ResolvingEntry = Resolvable>> IR<'ir, S> {
     pub fn introduce(&mut self, scope: ScopeId, name: Ident, resolvable: Resolvable) {
         match self.resolving_scopes[scope].entries.entry(name.0) {
             Entry::Vacant(entry) => {

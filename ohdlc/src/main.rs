@@ -7,7 +7,7 @@ use parser::Parser;
 
 use crate::{
     ir::{
-        stages::{resolve::ResolveLowering, unresolved::UnresolvedLowering},
+        stages::{resolving::ResolveLowering, unresolved::UnresolvedLowering},
         IR,
     },
     lexer::Lexer,
