@@ -37,9 +37,7 @@ impl ResolvingScopes {
             entries: HashMap::new(),
         })
     }
-}
 
-impl ResolvingScopes {
     pub fn find_resolvable(
         &self,
         scope: ScopeId,

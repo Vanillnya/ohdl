@@ -139,7 +139,6 @@ impl<'ir> UnresolvedLowering<'ir, '_> {
             .name_resolution
             .imports
             .insert(RefCell::new(ImportResult::InProgress(import)));
-        self.ir.name_resolution.queue.push_back(id);
         id
     }
 }

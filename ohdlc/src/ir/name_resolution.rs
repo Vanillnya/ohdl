@@ -1,4 +1,4 @@
-use std::{cell::RefCell, collections::VecDeque};
+use std::cell::RefCell;
 
 use surotto::{simple::SimpleSurotto, simple_key};
 
@@ -42,14 +42,12 @@ simple_key!(
 pub struct NameResolution<'ir> {
     // TODO: replace with UnsafeCell
     pub imports: SimpleSurotto<ImportId, RefCell<ImportResult<'ir>>>,
-    pub queue: VecDeque<ImportId>,
 }
 
 impl<'ir> NameResolution<'ir> {
     pub fn new() -> Self {
         Self {
             imports: SimpleSurotto::new(),
-            queue: VecDeque::new(),
         }
     }
 }

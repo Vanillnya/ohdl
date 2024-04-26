@@ -65,7 +65,12 @@ fn main() -> Result<(), ()> {
     }
 
     {
-        let resolve = ResolvingLowering { ir: &mut ir };
+        let resolve = ResolvingLowering {
+            modules: &ir.modules,
+            resolving_scopes: &ir.resolving_scopes,
+            queue: ir.name_resolution.imports.keys().collect(),
+            name_resolution: &mut ir.name_resolution,
+        };
         resolve.lower();
         report_messages(&source);
     }

@@ -1,22 +1,27 @@
+use std::collections::VecDeque;
+
 use crate::{
     ast::PathStart,
     ir::{
-        name_resolution::ImportResult,
-        resolving::{Resolvable, Resolved},
-        IR,
+        modules::Modules,
+        name_resolution::{ImportId, ImportResult, NameResolution},
+        resolving::{Resolvable, Resolved, ResolvingScopes},
     },
     message::Message,
     MESSAGES,
 };
 
 pub struct ResolvingLowering<'ir, 'b> {
-    pub ir: &'b mut IR<'ir>,
+    pub modules: &'b Modules,
+    pub resolving_scopes: &'b ResolvingScopes,
+    pub name_resolution: &'b mut NameResolution<'ir>,
+    pub queue: VecDeque<ImportId>,
 }
 
 impl<'ir> ResolvingLowering<'ir, '_> {
-    pub fn lower(self) {
-        while let Some(id) = self.ir.name_resolution.queue.pop_front() {
-            let import_res = &mut *self.ir.name_resolution.imports[id].borrow_mut();
+    pub fn lower(mut self) {
+        while let Some(id) = self.queue.pop_front() {
+            let import_res = &mut *self.name_resolution.imports[id].borrow_mut();
             let import = match import_res {
                 ImportResult::InProgress(i) => i,
                 ImportResult::Finished(_) => {
@@ -29,8 +34,7 @@ impl<'ir> ResolvingLowering<'ir, '_> {
             import.progress = false;
 
             let Some(resolvable) =
-                self.ir
-                    .resolving_scopes
+                self.resolving_scopes
                     .find_resolvable(import.scope, &segment, import.start, id)
             else {
                 MESSAGES.report(Message::could_not_resolve(*segment));
@@ -42,11 +46,11 @@ impl<'ir> ResolvingLowering<'ir, '_> {
                     if i == id {
                         panic!("Hek {segment:?} {resolvable:?}");
                     }
-                    match &mut *self.ir.name_resolution.imports[i].borrow_mut() {
+                    match &mut *self.name_resolution.imports[i].borrow_mut() {
                         ImportResult::InProgress(ipi) => {
                             if ipi.progress {
                                 import.progress = true;
-                                self.ir.name_resolution.queue.push_back(id);
+                                self.queue.push_back(id);
                                 None
                             } else {
                                 MESSAGES.report(Message::stuck_on_import(*segment, ipi.span));
@@ -67,7 +71,7 @@ impl<'ir> ResolvingLowering<'ir, '_> {
                         *import_res = ImportResult::Finished(Resolved::Type(t));
                     }
                     Resolved::Module(m) => {
-                        let module = &self.ir.modules[m];
+                        let module = &self.modules[m];
                         let sub_path = &import.path[1..];
                         if sub_path.is_empty() {
                             *import_res = ImportResult::Finished(Resolved::Module(m));
@@ -75,7 +79,7 @@ impl<'ir> ResolvingLowering<'ir, '_> {
                             import.scope = module.scope;
                             import.start = PathStart::Direct;
                             import.path = sub_path;
-                            self.ir.name_resolution.queue.push_back(id);
+                            self.queue.push_back(id);
                         }
                     }
                 }
