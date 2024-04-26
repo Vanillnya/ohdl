@@ -7,8 +7,10 @@ use parser::Parser;
 
 use crate::{
     ir::{
+        name_resolution::NameResolution,
+        registry::Registry,
+        resolving::ResolvingScopes,
         stages::{resolving::ResolvingLowering, unresolved::UnresolvedLowering},
-        IR,
     },
     lexer::Lexer,
 };
@@ -41,8 +43,6 @@ fn main() -> Result<(), ()> {
 
     let mut parser = Parser::new(&parser_arena, source.clone(), lexer);
 
-    let ir_arena = Bump::new();
-
     let root = parser.parse();
     let root = match root {
         Ok(tree) => tree,
@@ -53,12 +53,17 @@ fn main() -> Result<(), ()> {
         }
     };
 
-    let mut ir = IR::new();
+    let ir_arena = Bump::new();
+    let mut registry = Registry::default();
+    let mut resolving_scopes = ResolvingScopes::new();
+    let mut name_resolution = NameResolution::new();
 
     {
         let unresolved = UnresolvedLowering {
             arena: &ir_arena,
-            ir: &mut ir,
+            name_resolution: &mut name_resolution,
+            registry: &mut registry,
+            resolving_scopes: &mut resolving_scopes,
         };
         unresolved.lower(&root);
         report_messages(&source);
@@ -66,16 +71,16 @@ fn main() -> Result<(), ()> {
 
     {
         let resolve = ResolvingLowering {
-            modules: &ir.modules,
-            resolving_scopes: &ir.resolving_scopes,
-            queue: ir.name_resolution.imports.keys().collect(),
-            name_resolution: &mut ir.name_resolution,
+            registry: &registry,
+            resolving_scopes: &resolving_scopes,
+            queue: name_resolution.imports.keys().collect(),
+            name_resolution: &mut name_resolution,
         };
         resolve.lower();
         report_messages(&source);
     }
 
-    for import in ir.name_resolution.imports.values() {
+    for import in name_resolution.imports.values() {
         println!("{import:?}");
     }
 

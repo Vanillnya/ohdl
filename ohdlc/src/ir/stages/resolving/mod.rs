@@ -3,8 +3,8 @@ use std::collections::VecDeque;
 use crate::{
     ast::PathStart,
     ir::{
-        modules::Modules,
         name_resolution::{ImportId, ImportResult, NameResolution},
+        registry::Registry,
         resolving::{Resolvable, Resolved, ResolvingScopes},
     },
     message::Message,
@@ -12,7 +12,7 @@ use crate::{
 };
 
 pub struct ResolvingLowering<'ir, 'b> {
-    pub modules: &'b Modules,
+    pub registry: &'b Registry<'ir>,
     pub resolving_scopes: &'b ResolvingScopes,
     pub name_resolution: &'b mut NameResolution<'ir>,
     pub queue: VecDeque<ImportId>,
@@ -71,7 +71,7 @@ impl<'ir> ResolvingLowering<'ir, '_> {
                         *import_res = ImportResult::Finished(Resolved::Type(t));
                     }
                     Resolved::Module(m) => {
-                        let module = &self.modules[m];
+                        let module = &self.registry.modules[m];
                         let sub_path = &import.path[1..];
                         if sub_path.is_empty() {
                             *import_res = ImportResult::Finished(Resolved::Module(m));

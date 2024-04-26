@@ -1,14 +1,22 @@
 use deref_derive::{Deref, DerefMut};
-use std::{collections::HashMap, fmt::Debug};
+use std::{
+    collections::{hash_map::Entry, HashMap},
+    fmt::Debug,
+};
 use surotto::{simple::SimpleSurotto, simple_key};
 
 use crate::{
     ast::PathStart,
     ir::{modules::ModuleId, types::TypeId},
+    message::Message,
     symbol::{Ident, Symbol},
+    MESSAGES,
 };
 
-use super::name_resolution::ImportId;
+use super::{
+    name_resolution::{ImportId, ImportResult, NameResolution},
+    registry::Registry,
+};
 
 simple_key!(
     pub struct ScopeId;
@@ -58,6 +66,41 @@ impl ResolvingScopes {
                 },
                 Some(resolvable) => return Some(resolvable),
             }
+        }
+    }
+
+    pub fn introduce(
+        &mut self,
+        scope: ScopeId,
+        name: Ident,
+        resolvable: Resolvable,
+        registry: &Registry<'_>,
+        name_resolution: &NameResolution<'_>,
+    ) {
+        match self[scope].entries.entry(name.0) {
+            Entry::Vacant(entry) => {
+                entry.insert(resolvable);
+            }
+            Entry::Occupied(entry) => {
+                let original = match *entry.get() {
+                    Resolvable::Resolved(r) => self.name_of_resolved(r, registry),
+                    Resolvable::Import(i) => {
+                        let import = &*name_resolution.imports[i].borrow();
+                        match import {
+                            ImportResult::InProgress(i) => *i.path.last().unwrap(),
+                            ImportResult::Finished(r) => self.name_of_resolved(*r, registry),
+                        }
+                    }
+                };
+                MESSAGES.report(Message::already_in_scope(name.0.get(), name.1, original.1));
+            }
+        }
+    }
+
+    fn name_of_resolved(&self, resolved: Resolved, registry: &Registry<'_>) -> Ident {
+        match resolved {
+            Resolved::Type(t) => registry.types[t].name(),
+            Resolved::Module(m) => registry.modules[m].name,
         }
     }
 }

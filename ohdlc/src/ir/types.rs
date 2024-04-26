@@ -1,6 +1,5 @@
-use deref_derive::{Deref, DerefMut};
 use std::fmt::Debug;
-use surotto::{simple::SimpleSurotto, simple_key};
+use surotto::simple_key;
 
 use crate::{ast::PortKind, symbol::Ident};
 
@@ -9,15 +8,6 @@ use super::name_resolution::ImportId;
 simple_key!(
     pub struct TypeId;
 );
-
-#[derive(Default, Deref, DerefMut)]
-pub struct Types<'hir>(SimpleSurotto<TypeId, Type<'hir>>);
-
-impl Debug for Types<'_> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_list().entries(self.0.iter()).finish()
-    }
-}
 
 #[derive(Debug)]
 pub enum Type<'hir> {
