@@ -23,13 +23,13 @@ simple_key!(
 );
 
 #[derive(Debug, Deref, DerefMut)]
-pub struct ResolvingScopes {
+pub struct NameLookup {
     #[deref]
     pub scopes: SimpleSurotto<ScopeId, ResolvingScope>,
     pub root: ScopeId,
 }
 
-impl ResolvingScopes {
+impl NameLookup {
     pub fn new() -> Self {
         let mut scopes = SimpleSurotto::with_capacity(1);
         let root = scopes.insert(ResolvingScope {

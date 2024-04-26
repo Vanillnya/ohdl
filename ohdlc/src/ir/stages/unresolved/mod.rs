@@ -6,9 +6,9 @@ use crate::{
     ast,
     ir::{
         modules::Module,
+        name_lookup::{NameLookup, Resolvable, Resolved, ScopeId},
         name_resolution::{Import, ImportId, ImportResult, NameResolution},
         registry::Registry,
-        resolving::{Resolvable, Resolved, ResolvingScopes, ScopeId},
         types::{Entity, Enum, Field, Port, Record, Type, TypeId, Variant},
     },
     span::Spanned,
@@ -17,14 +17,14 @@ use crate::{
 pub struct UnresolvedLowering<'ir, 'b> {
     pub arena: &'ir Bump,
     pub registry: &'b mut Registry<'ir>,
-    pub resolving_scopes: &'b mut ResolvingScopes,
+    pub name_lookup: &'b mut NameLookup,
     pub name_resolution: &'b mut NameResolution<'ir>,
 }
 
 impl<'ir> UnresolvedLowering<'ir, '_> {
     pub fn lower(mut self, root: &[Spanned<ast::Item<'_>>]) {
         for item in root {
-            self.lower_item(self.resolving_scopes.root, item);
+            self.lower_item(self.name_lookup.root, item);
         }
     }
 
@@ -49,7 +49,7 @@ impl<'ir> UnresolvedLowering<'ir, '_> {
 
     fn lower_use(&mut self, scope: ScopeId, u: &ast::Use) {
         let id = self.schedule_resolution_of_path(scope, &u.path);
-        self.resolving_scopes.introduce(
+        self.name_lookup.introduce(
             scope,
             u.path.0 .0.last().unwrap().0,
             Resolvable::Import(id),
@@ -59,13 +59,13 @@ impl<'ir> UnresolvedLowering<'ir, '_> {
     }
 
     fn lower_mod(&mut self, scope: ScopeId, m: &ast::Module<'_>) {
-        let sub_scope = self.resolving_scopes.sub_scope(scope);
+        let sub_scope = self.name_lookup.sub_scope(scope);
 
         let module = self.registry.modules.insert(Module {
             name: m.name,
             scope: sub_scope,
         });
-        self.resolving_scopes.introduce(
+        self.name_lookup.introduce(
             scope,
             m.name,
             Resolvable::Resolved(Resolved::Module(module)),
@@ -124,7 +124,7 @@ impl<'ir> UnresolvedLowering<'ir, '_> {
         let id = self.registry.types.insert_with(f);
 
         let name = self.registry.types[id].name();
-        self.resolving_scopes.introduce(
+        self.name_lookup.introduce(
             scope,
             name,
             Resolvable::Resolved(Resolved::Type(id)),

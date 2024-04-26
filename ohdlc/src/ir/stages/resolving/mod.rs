@@ -3,9 +3,9 @@ use std::collections::VecDeque;
 use crate::{
     ast::PathStart,
     ir::{
+        name_lookup::{NameLookup, Resolvable, Resolved},
         name_resolution::{ImportId, ImportResult, NameResolution},
         registry::Registry,
-        resolving::{Resolvable, Resolved, ResolvingScopes},
     },
     message::Message,
     MESSAGES,
@@ -13,7 +13,7 @@ use crate::{
 
 pub struct ResolvingLowering<'ir, 'b> {
     pub registry: &'b Registry<'ir>,
-    pub resolving_scopes: &'b ResolvingScopes,
+    pub name_lookup: &'b NameLookup,
     pub name_resolution: &'b mut NameResolution<'ir>,
     pub queue: VecDeque<ImportId>,
 }
@@ -34,7 +34,7 @@ impl<'ir> ResolvingLowering<'ir, '_> {
             import.progress = false;
 
             let Some(resolvable) =
-                self.resolving_scopes
+                self.name_lookup
                     .find_resolvable(import.scope, &segment, import.start, id)
             else {
                 MESSAGES.report(Message::could_not_resolve(*segment));

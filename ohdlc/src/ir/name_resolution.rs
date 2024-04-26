@@ -4,7 +4,7 @@ use surotto::{simple::SimpleSurotto, simple_key};
 
 use crate::{ast::PathStart, span::Span, symbol::Ident};
 
-use super::resolving::{Resolved, ScopeId};
+use super::name_lookup::{Resolved, ScopeId};
 
 /// ```ohdl,ignore
 /// mod scope {

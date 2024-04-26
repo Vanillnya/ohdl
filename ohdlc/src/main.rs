@@ -7,9 +7,9 @@ use parser::Parser;
 
 use crate::{
     ir::{
+        name_lookup::NameLookup,
         name_resolution::NameResolution,
         registry::Registry,
-        resolving::ResolvingScopes,
         stages::{resolving::ResolvingLowering, unresolved::UnresolvedLowering},
     },
     lexer::Lexer,
@@ -55,7 +55,7 @@ fn main() -> Result<(), ()> {
 
     let ir_arena = Bump::new();
     let mut registry = Registry::default();
-    let mut resolving_scopes = ResolvingScopes::new();
+    let mut name_lookup = NameLookup::new();
     let mut name_resolution = NameResolution::new();
 
     {
@@ -63,7 +63,7 @@ fn main() -> Result<(), ()> {
             arena: &ir_arena,
             name_resolution: &mut name_resolution,
             registry: &mut registry,
-            resolving_scopes: &mut resolving_scopes,
+            name_lookup: &mut name_lookup,
         };
         unresolved.lower(&root);
         report_messages(&source);
@@ -72,7 +72,7 @@ fn main() -> Result<(), ()> {
     {
         let resolve = ResolvingLowering {
             registry: &registry,
-            resolving_scopes: &resolving_scopes,
+            name_lookup: &name_lookup,
             queue: name_resolution.imports.keys().collect(),
             name_resolution: &mut name_resolution,
         };
