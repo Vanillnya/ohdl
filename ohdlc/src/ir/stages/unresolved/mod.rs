@@ -1,27 +1,25 @@
-use std::cell::RefCell;
-
 use bumpalo::Bump;
 
 use crate::{
     ast,
     ir::{
+        import_bucket::{Import, ImportBucket},
         modules::Module,
-        name_lookup::{NameLookup, Resolvable, Resolved, ScopeId},
-        name_resolution::{Import, ImportId, ImportResult, NameResolution},
+        name_lookup::{PreFlattenNameLookup, Resolvable, Resolved, ScopeId},
         registry::Registry,
         types::{Entity, Enum, Field, Port, Record, Type, TypeId, Variant},
     },
     span::Spanned,
 };
 
-pub struct UnresolvedLowering<'ir, 'b> {
+pub struct UnresolvedStage<'ir, 'b> {
     pub arena: &'ir Bump,
     pub registry: &'b mut Registry<'ir>,
-    pub name_lookup: &'b mut NameLookup,
-    pub name_resolution: &'b mut NameResolution<'ir>,
+    pub name_lookup: &'b mut PreFlattenNameLookup,
+    pub import_bucket: &'b mut ImportBucket<'ir>,
 }
 
-impl<'ir> UnresolvedLowering<'ir, '_> {
+impl<'ir> UnresolvedStage<'ir, '_> {
     pub fn lower(mut self, root: &[Spanned<ast::Item<'_>>]) {
         for item in root {
             self.lower_item(self.name_lookup.root, item);
@@ -48,14 +46,18 @@ impl<'ir> UnresolvedLowering<'ir, '_> {
     }
 
     fn lower_use(&mut self, scope: ScopeId, u: &ast::Use) {
-        let id = self.schedule_resolution_of_path(scope, &u.path);
-        self.name_lookup.introduce(
+        let Spanned(path, span) = &u.path;
+        let id = self.import_bucket.insert(Import {
             scope,
-            u.path.0 .0.last().unwrap().0,
-            Resolvable::Import(id),
-            self.registry,
-            self.name_resolution,
-        );
+            start: path.1,
+            path: self
+                .arena
+                .alloc_slice_fill_iter(path.0.iter().map(|seg| seg.0)),
+            span: *span,
+            target_scope: scope,
+        });
+        self.name_lookup
+            .introduce(scope, path.0.last().unwrap().0, Resolvable::Import(id));
     }
 
     fn lower_mod(&mut self, scope: ScopeId, m: &ast::Module<'_>) {
@@ -69,8 +71,6 @@ impl<'ir> UnresolvedLowering<'ir, '_> {
             scope,
             m.name,
             Resolvable::Resolved(Resolved::Module(module)),
-            self.registry,
-            self.name_resolution,
         );
 
         for i in &m.items {
@@ -85,7 +85,7 @@ impl<'ir> UnresolvedLowering<'ir, '_> {
             .map(|port| Port {
                 kind: port.kind.0,
                 name: port.name,
-                ty: self.schedule_resolution_of_path(scope, &port.ty.path),
+                ty: (),
             })
             .collect();
 
@@ -104,7 +104,7 @@ impl<'ir> UnresolvedLowering<'ir, '_> {
             .iter()
             .map(|field| Field {
                 name: field.name,
-                ty: self.schedule_resolution_of_path(scope, &field.ty.path),
+                ty: (),
             })
             .collect();
 
@@ -124,34 +124,7 @@ impl<'ir> UnresolvedLowering<'ir, '_> {
         let id = self.registry.types.insert_with(f);
 
         let name = self.registry.types[id].name();
-        self.name_lookup.introduce(
-            scope,
-            name,
-            Resolvable::Resolved(Resolved::Type(id)),
-            self.registry,
-            self.name_resolution,
-        );
-    }
-
-    fn schedule_resolution_of_path(
-        &mut self,
-        scope: ScopeId,
-        path: &Spanned<ast::Path>,
-    ) -> ImportId {
-        let Spanned(path, span) = path;
-        let import = Import {
-            scope,
-            start: path.1,
-            path: self
-                .arena
-                .alloc_slice_fill_iter(path.0.iter().map(|seg| seg.0)),
-            progress: true,
-            span: *span,
-        };
-        let id = self
-            .name_resolution
-            .imports
-            .insert(RefCell::new(ImportResult::InProgress(import)));
-        id
+        self.name_lookup
+            .introduce(scope, name, Resolvable::Resolved(Resolved::Type(id)));
     }
 }

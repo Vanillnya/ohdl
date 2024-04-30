@@ -3,8 +3,6 @@ use surotto::simple_key;
 
 use crate::{ast::PortKind, symbol::Ident};
 
-use super::name_resolution::ImportId;
-
 simple_key!(
     pub struct TypeId;
 );
@@ -46,7 +44,7 @@ pub struct Port {
     // TODO: we should agree on whether to use ast types in ir or ir types in ast, not both.
     pub kind: PortKind,
     pub name: Ident,
-    pub ty: ImportId,
+    pub ty: (),
 }
 
 #[derive(Debug)]
@@ -59,7 +57,7 @@ pub struct Record {
 #[derive(Debug)]
 pub struct Field {
     pub name: Ident,
-    pub ty: ImportId,
+    pub ty: (),
 }
 
 #[derive(Debug)]
