@@ -14,7 +14,7 @@ use crate::{
     MESSAGES,
 };
 
-use super::{import_bucket::ImportId, registry::Registry};
+use super::import_bucket::ImportId;
 
 simple_key!(
     pub struct ScopeId;
@@ -73,13 +73,6 @@ impl<L> NameLookup<L> {
                     *original_span,
                 ));
             }
-        }
-    }
-
-    fn name_of_resolved(&self, resolved: Resolved, registry: &Registry<'_>) -> Ident {
-        match resolved {
-            Resolved::Type(t) => registry.types[t].name(),
-            Resolved::Module(m) => registry.modules[m].name,
         }
     }
 }

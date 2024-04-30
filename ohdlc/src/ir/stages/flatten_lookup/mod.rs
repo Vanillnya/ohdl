@@ -1,3 +1,5 @@
+use std::mem::MaybeUninit;
+
 use crate::{
     ast::PathStart,
     ir::{
@@ -76,30 +78,41 @@ impl<'ir> FlattenLookupStage<'ir, '_> {
         // TODO: is it really smart to convert all here or
         //       should we just let them as Resolvable and
         //       resolve them via the bucket on-demand?
-        Some(PostFlattenNameLookup {
-            scopes: self.name_lookup.scopes.map(|_, scope| {
-                LookupScope {
-                    entries: scope
-                        .entries
-                        .into_iter()
-                        .map(|(symbol, (span, resolvable))| {
-                            (
-                                symbol,
-                                (
-                                    span,
-                                    match resolvable {
-                                        Resolvable::Import(i) => panic!(":c {i:?}"), // TODO: do we need an error here?
-                                        Resolvable::Resolved(r) => r,
-                                    },
-                                ),
-                            )
-                        })
-                        .collect(),
-                    parent: scope.parent,
-                }
-            }),
-            root: self.name_lookup.root,
-        })
+        let mut successful_flattening = true;
+        let scopes = self.name_lookup.scopes.map(|_, scope| LookupScope {
+            entries: scope
+                .entries
+                .into_iter()
+                .map(|(symbol, (span, resolvable))| {
+                    (
+                        symbol,
+                        (
+                            span,
+                            match resolvable {
+                                Resolvable::Import(_i) => {
+                                    successful_flattening = false;
+                                    #[allow(invalid_value)]
+                                    unsafe {
+                                        // SAFETY: we just set `successful_flattening` to false, so we don't use this anymore.
+                                        MaybeUninit::uninit().assume_init()
+                                    }
+                                }
+                                Resolvable::Resolved(r) => r,
+                            },
+                        ),
+                    )
+                })
+                .collect(),
+            parent: scope.parent,
+        });
+        if successful_flattening {
+            Some(PostFlattenNameLookup {
+                scopes,
+                root: self.name_lookup.root,
+            })
+        } else {
+            None
+        }
     }
 
     fn build_start_dependencies(&mut self) {
