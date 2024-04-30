@@ -2,7 +2,9 @@ use crate::{
     ast::PathStart,
     ir::{
         import_bucket::{ImportBucket, ImportId},
-        name_lookup::{PostFlattenNameLookup, PreFlattenNameLookup, Resolvable, Resolved},
+        name_lookup::{
+            LookupScope, PostFlattenNameLookup, PreFlattenNameLookup, Resolvable, Resolved,
+        },
         registry::Registry,
     },
     message::Message,
@@ -17,7 +19,7 @@ pub struct FlattenLookupStage<'ir, 'b> {
 }
 
 impl<'ir> FlattenLookupStage<'ir, '_> {
-    pub fn lower(mut self) -> PostFlattenNameLookup {
+    pub fn lower(mut self) -> Option<PostFlattenNameLookup> {
         self.build_start_dependencies();
 
         while let Some(id) = self.resolvables.pop() {
@@ -70,7 +72,34 @@ impl<'ir> FlattenLookupStage<'ir, '_> {
             let import = &self.import_bucket.imports[cyclic];
             MESSAGES.report(Message::stuck_on_import(import.path[0]));
         }
-        todo!()
+
+        // TODO: is it really smart to convert all here or
+        //       should we just let them as Resolvable and
+        //       resolve them via the bucket on-demand?
+        Some(PostFlattenNameLookup {
+            scopes: self.name_lookup.scopes.map(|_, scope| {
+                LookupScope {
+                    entries: scope
+                        .entries
+                        .into_iter()
+                        .map(|(symbol, (span, resolvable))| {
+                            (
+                                symbol,
+                                (
+                                    span,
+                                    match resolvable {
+                                        Resolvable::Import(i) => panic!(":c {i:?}"), // TODO: do we need an error here?
+                                        Resolvable::Resolved(r) => r,
+                                    },
+                                ),
+                            )
+                        })
+                        .collect(),
+                    parent: scope.parent,
+                }
+            }),
+            root: self.name_lookup.root,
+        })
     }
 
     fn build_start_dependencies(&mut self) {
