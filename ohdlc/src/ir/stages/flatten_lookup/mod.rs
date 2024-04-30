@@ -31,7 +31,12 @@ impl<'ir> FlattenLookupStage<'ir, '_> {
                 let segment = import.path[0];
                 match self
                     .name_lookup
-                    .lookup(import.scope, &segment, import.start)
+                    .lookup_ignore(
+                        import.scope,
+                        &segment,
+                        import.start,
+                        |r| matches!(r, Resolvable::Import(i) if *i == id),
+                    )
                     .cloned()
                 {
                     Some(Resolvable::Import(_)) => {
@@ -114,10 +119,12 @@ impl<'ir> FlattenLookupStage<'ir, '_> {
 
     fn build_start_dependencies(&mut self) {
         for (id, import) in self.import_bucket.imports.iter() {
-            match self
-                .name_lookup
-                .lookup(import.scope, &import.path[0], import.start)
-            {
+            match self.name_lookup.lookup_ignore(
+                import.scope,
+                &import.path[0],
+                import.start,
+                |r| matches!(r, Resolvable::Import(i) if *i == id),
+            ) {
                 Some(Resolvable::Import(dep)) => self.import_bucket.dependants[*dep].push(id),
                 _ => self.resolvables.push(id),
             }

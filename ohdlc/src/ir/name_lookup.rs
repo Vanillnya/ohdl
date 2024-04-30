@@ -48,9 +48,23 @@ impl<L> NameLookup<L> {
     }
 
     pub fn lookup(&self, scope: ScopeId, lookup: &Ident, start: PathStart) -> Option<&L> {
+        self.lookup_ignore(scope, lookup, start, |_| false)
+    }
+
+    pub fn lookup_ignore<I: Fn(&L) -> bool>(
+        &self,
+        scope: ScopeId,
+        lookup: &Ident,
+        start: PathStart,
+        ignore: I,
+    ) -> Option<&L> {
         let mut scope = &self[scope];
         loop {
             match scope.entries.get(lookup) {
+                Some(resolvable) if (ignore)(&resolvable.1) => match (scope.parent, start) {
+                    (Some(p), PathStart::Indirect) => scope = &self[p],
+                    _ => return None,
+                },
                 None => match (scope.parent, start) {
                     (Some(p), PathStart::Indirect) => scope = &self[p],
                     _ => return None,
