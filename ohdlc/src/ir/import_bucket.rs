@@ -46,4 +46,6 @@ pub struct Import<'ir> {
     pub path: &'ir [Ident],
     /// The whole import span
     pub span: Span,
+    /// The scope the import will be added to
+    pub target_scope: ScopeId,
 }

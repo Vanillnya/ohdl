@@ -74,6 +74,7 @@ fn main() -> Result<(), ()> {
             registry: &registry,
             name_lookup,
             import_bucket,
+            resolvables: Vec::new(),
         };
         let lookup = resolve.lower();
         report_messages(&source);

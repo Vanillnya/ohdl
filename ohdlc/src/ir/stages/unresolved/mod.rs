@@ -54,6 +54,7 @@ impl<'ir> UnresolvedStage<'ir, '_> {
                 .arena
                 .alloc_slice_fill_iter(path.0.iter().map(|seg| seg.0)),
             span: *span,
+            target_scope: scope,
         });
         self.name_lookup
             .introduce(scope, path.0.last().unwrap().0, Resolvable::Import(id));
