@@ -14,7 +14,7 @@ use crate::{
     MESSAGES,
 };
 
-use super::{name_resolution::ImportId, registry::Registry};
+use super::{import_bucket::ImportId, registry::Registry};
 
 simple_key!(
     pub struct ScopeId;

@@ -1,16 +1,13 @@
-use std::collections::VecDeque;
-
 use crate::ir::{
+    import_bucket::ImportBucket,
     name_lookup::{PostFlattenNameLookup, PreFlattenNameLookup},
-    name_resolution::{ImportId, NameResolution},
     registry::Registry,
 };
 
 pub struct FlattenLookupStage<'ir, 'b> {
     pub registry: &'b Registry<'ir>,
     pub name_lookup: PreFlattenNameLookup,
-    pub name_resolution: &'b mut NameResolution<'ir>,
-    pub queue: VecDeque<ImportId>,
+    pub import_bucket: ImportBucket<'ir>,
 }
 
 impl<'ir> FlattenLookupStage<'ir, '_> {

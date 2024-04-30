@@ -1,13 +1,11 @@
-use std::cell::RefCell;
-
 use bumpalo::Bump;
 
 use crate::{
     ast,
     ir::{
+        import_bucket::{Import, ImportBucket},
         modules::Module,
         name_lookup::{PreFlattenNameLookup, Resolvable, Resolved, ScopeId},
-        name_resolution::{Import, ImportId, ImportResult, NameResolution},
         registry::Registry,
         types::{Entity, Enum, Field, Port, Record, Type, TypeId, Variant},
     },
@@ -18,7 +16,7 @@ pub struct UnresolvedStage<'ir, 'b> {
     pub arena: &'ir Bump,
     pub registry: &'b mut Registry<'ir>,
     pub name_lookup: &'b mut PreFlattenNameLookup,
-    pub name_resolution: &'b mut NameResolution<'ir>,
+    pub import_bucket: &'b mut ImportBucket<'ir>,
 }
 
 impl<'ir> UnresolvedStage<'ir, '_> {
@@ -48,9 +46,17 @@ impl<'ir> UnresolvedStage<'ir, '_> {
     }
 
     fn lower_use(&mut self, scope: ScopeId, u: &ast::Use) {
-        let id = self.schedule_resolution_of_path(scope, &u.path);
+        let Spanned(path, span) = &u.path;
+        let id = self.import_bucket.insert(Import {
+            scope,
+            start: path.1,
+            path: self
+                .arena
+                .alloc_slice_fill_iter(path.0.iter().map(|seg| seg.0)),
+            span: *span,
+        });
         self.name_lookup
-            .introduce(scope, u.path.0 .0.last().unwrap().0, Resolvable::Import(id));
+            .introduce(scope, path.0.last().unwrap().0, Resolvable::Import(id));
     }
 
     fn lower_mod(&mut self, scope: ScopeId, m: &ast::Module<'_>) {
@@ -78,7 +84,7 @@ impl<'ir> UnresolvedStage<'ir, '_> {
             .map(|port| Port {
                 kind: port.kind.0,
                 name: port.name,
-                ty: self.schedule_resolution_of_path(scope, &port.ty.path),
+                ty: (),
             })
             .collect();
 
@@ -97,7 +103,7 @@ impl<'ir> UnresolvedStage<'ir, '_> {
             .iter()
             .map(|field| Field {
                 name: field.name,
-                ty: self.schedule_resolution_of_path(scope, &field.ty.path),
+                ty: (),
             })
             .collect();
 
@@ -119,27 +125,5 @@ impl<'ir> UnresolvedStage<'ir, '_> {
         let name = self.registry.types[id].name();
         self.name_lookup
             .introduce(scope, name, Resolvable::Resolved(Resolved::Type(id)));
-    }
-
-    fn schedule_resolution_of_path(
-        &mut self,
-        scope: ScopeId,
-        path: &Spanned<ast::Path>,
-    ) -> ImportId {
-        let Spanned(path, span) = path;
-        let import = Import {
-            scope,
-            start: path.1,
-            path: self
-                .arena
-                .alloc_slice_fill_iter(path.0.iter().map(|seg| seg.0)),
-            progress: true,
-            span: *span,
-        };
-        let id = self
-            .name_resolution
-            .imports
-            .insert(RefCell::new(ImportResult::InProgress(import)));
-        id
     }
 }

@@ -7,8 +7,8 @@ use parser::Parser;
 
 use crate::{
     ir::{
+        import_bucket::ImportBucket,
         name_lookup::NameLookup,
-        name_resolution::NameResolution,
         registry::Registry,
         stages::{flatten_lookup::FlattenLookupStage, unresolved::UnresolvedStage},
     },
@@ -56,14 +56,14 @@ fn main() -> Result<(), ()> {
     let ir_arena = Bump::new();
     let mut registry = Registry::default();
     let mut name_lookup = NameLookup::new();
-    let mut name_resolution = NameResolution::new();
+    let mut import_bucket = ImportBucket::new();
 
     {
         let unresolved = UnresolvedStage {
             arena: &ir_arena,
-            name_resolution: &mut name_resolution,
             registry: &mut registry,
             name_lookup: &mut name_lookup,
+            import_bucket: &mut import_bucket,
         };
         unresolved.lower(&root);
         report_messages(&source);
@@ -72,18 +72,13 @@ fn main() -> Result<(), ()> {
     let name_lookup = {
         let resolve = FlattenLookupStage {
             registry: &registry,
-            name_lookup: name_lookup,
-            queue: name_resolution.imports.keys().collect(),
-            name_resolution: &mut name_resolution,
+            name_lookup,
+            import_bucket,
         };
         let lookup = resolve.lower();
         report_messages(&source);
         lookup
     };
-
-    for import in name_resolution.imports.values() {
-        println!("{import:?}");
-    }
 
     Ok(())
 }
