@@ -6,7 +6,7 @@ use crate::{
     ast,
     ir::{
         modules::Module,
-        name_lookup::{PreImportNameLookup, Resolvable, Resolved, ScopeId},
+        name_lookup::{PreFlattenNameLookup, Resolvable, Resolved, ScopeId},
         name_resolution::{Import, ImportId, ImportResult, NameResolution},
         registry::Registry,
         types::{Entity, Enum, Field, Port, Record, Type, TypeId, Variant},
@@ -14,14 +14,14 @@ use crate::{
     span::Spanned,
 };
 
-pub struct UnresolvedLowering<'ir, 'b> {
+pub struct UnresolvedStage<'ir, 'b> {
     pub arena: &'ir Bump,
     pub registry: &'b mut Registry<'ir>,
-    pub name_lookup: &'b mut PreImportNameLookup,
+    pub name_lookup: &'b mut PreFlattenNameLookup,
     pub name_resolution: &'b mut NameResolution<'ir>,
 }
 
-impl<'ir> UnresolvedLowering<'ir, '_> {
+impl<'ir> UnresolvedStage<'ir, '_> {
     pub fn lower(mut self, root: &[Spanned<ast::Item<'_>>]) {
         for item in root {
             self.lower_item(self.name_lookup.root, item);

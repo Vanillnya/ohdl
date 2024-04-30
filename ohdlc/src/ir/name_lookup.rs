@@ -20,8 +20,8 @@ simple_key!(
     pub struct ScopeId;
 );
 
-pub type PreImportNameLookup = NameLookup<Resolvable>;
-pub type PostImportNameLookup = NameLookup<Resolved>;
+pub type PreFlattenNameLookup = NameLookup<Resolvable>;
+pub type PostFlattenNameLookup = NameLookup<Resolved>;
 
 #[derive(Debug, Deref, DerefMut)]
 pub struct NameLookup<L> {

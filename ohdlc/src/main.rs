@@ -10,7 +10,7 @@ use crate::{
         name_lookup::NameLookup,
         name_resolution::NameResolution,
         registry::Registry,
-        stages::{resolving::ResolvingLowering, unresolved::UnresolvedLowering},
+        stages::{flatten_lookup::FlattenLookupStage, unresolved::UnresolvedStage},
     },
     lexer::Lexer,
 };
@@ -59,7 +59,7 @@ fn main() -> Result<(), ()> {
     let mut name_resolution = NameResolution::new();
 
     {
-        let unresolved = UnresolvedLowering {
+        let unresolved = UnresolvedStage {
             arena: &ir_arena,
             name_resolution: &mut name_resolution,
             registry: &mut registry,
@@ -70,7 +70,7 @@ fn main() -> Result<(), ()> {
     }
 
     let name_lookup = {
-        let resolve = ResolvingLowering {
+        let resolve = FlattenLookupStage {
             registry: &registry,
             name_lookup: name_lookup,
             queue: name_resolution.imports.keys().collect(),
