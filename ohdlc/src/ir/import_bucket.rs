@@ -1,27 +1,32 @@
-use petgraph::{graph::NodeIndex, Graph};
+use surotto::{simple::SimpleSurotto, simple_assoc::SimpleAssocSurotto, simple_key};
 
 use crate::{ast::PathStart, span::Span, symbol::Ident};
 
 use super::name_lookup::ScopeId;
 
+simple_key!(
+    pub struct ImportId;
+);
+
 pub struct ImportBucket<'ir> {
-    graph: Graph<Import<'ir>, ()>,
+    pub imports: SimpleSurotto<ImportId, Import<'ir>>,
+    pub deps: SimpleAssocSurotto<ImportId, Vec<ImportId>>,
 }
 
 impl<'ir> ImportBucket<'ir> {
     pub fn new() -> Self {
         Self {
-            graph: Graph::new(),
+            imports: SimpleSurotto::new(),
+            deps: SimpleAssocSurotto::new(),
         }
     }
 
     pub fn insert(&mut self, import: Import<'ir>) -> ImportId {
-        ImportId(self.graph.add_node(import))
+        let id = self.imports.insert(import);
+        self.deps.insert(id, Vec::new());
+        id
     }
 }
-
-#[derive(Debug, Clone, Copy)]
-pub struct ImportId(NodeIndex<u32>);
 
 /// ```ohdl,ignore
 /// mod scope {
