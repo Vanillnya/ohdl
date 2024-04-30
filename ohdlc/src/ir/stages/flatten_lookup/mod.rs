@@ -22,7 +22,7 @@ impl<'ir> FlattenLookupStage<'ir, '_> {
                 .name_lookup
                 .lookup(import.scope, &import.path[0], import.start)
             {
-                Some(Resolvable::Import(dep)) => self.import_bucket.deps[id].push(*dep),
+                Some(Resolvable::Import(dep)) => self.import_bucket.dependants[*dep].push(id),
                 _ => {}
             }
         }

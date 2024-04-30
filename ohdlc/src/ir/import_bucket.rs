@@ -10,20 +10,20 @@ simple_key!(
 
 pub struct ImportBucket<'ir> {
     pub imports: SimpleSurotto<ImportId, Import<'ir>>,
-    pub deps: SimpleAssocSurotto<ImportId, Vec<ImportId>>,
+    pub dependants: SimpleAssocSurotto<ImportId, Vec<ImportId>>,
 }
 
 impl<'ir> ImportBucket<'ir> {
     pub fn new() -> Self {
         Self {
             imports: SimpleSurotto::new(),
-            deps: SimpleAssocSurotto::new(),
+            dependants: SimpleAssocSurotto::new(),
         }
     }
 
     pub fn insert(&mut self, import: Import<'ir>) -> ImportId {
         let id = self.imports.insert(import);
-        self.deps.insert(id, Vec::new());
+        self.dependants.insert(id, Vec::new());
         id
     }
 }
