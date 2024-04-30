@@ -70,11 +70,6 @@ impl<'ir> FlattenLookupStage<'ir, '_> {
             }
         }
 
-        for cyclic in self.resolvables {
-            let import = &self.import_bucket.imports[cyclic];
-            MESSAGES.report(Message::stuck_on_import(import.path[0]));
-        }
-
         // TODO: is it really smart to convert all here or
         //       should we just let them as Resolvable and
         //       resolve them via the bucket on-demand?
@@ -89,7 +84,9 @@ impl<'ir> FlattenLookupStage<'ir, '_> {
                         (
                             span,
                             match resolvable {
-                                Resolvable::Import(_i) => {
+                                Resolvable::Import(i) => {
+                                    let import = &self.import_bucket.imports[i];
+                                    MESSAGES.report(Message::stuck_on_import(import.path[0]));
                                     successful_flattening = false;
                                     #[allow(invalid_value)]
                                     unsafe {

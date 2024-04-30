@@ -8,6 +8,7 @@ simple_key!(
     pub struct ImportId;
 );
 
+#[derive(Debug)]
 pub struct ImportBucket<'ir> {
     pub imports: SimpleSurotto<ImportId, Import<'ir>>,
     pub dependants: SimpleAssocSurotto<ImportId, Vec<ImportId>>,

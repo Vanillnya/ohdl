@@ -294,7 +294,7 @@ checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
 [[package]]
 name = "surotto"
 version = "0.1.0"
-source = "git+https://github.com/DasLixou/surotto#5146b6baf0ef8a9f16c6bada933985bfddea65e3"
+source = "git+https://github.com/DasLixou/surotto#4a1c7363cbefa1a8ff6df9d30247734b2bb5cce2"
 dependencies = [
  "nonmax",
 ]
