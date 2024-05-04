@@ -2,8 +2,8 @@ use crate::{ast::PortKind, ir::registry::TypeId, symbol::Ident};
 
 #[derive(Debug)]
 pub enum RefinedType<'hir> {
-    Entity(Entity),
-    Record(Record),
+    Entity(Entity<'hir>),
+    Record(Record<'hir>),
     Enum(Enum<'hir>),
 }
 
@@ -26,10 +26,10 @@ impl RefinedType<'_> {
 }
 
 #[derive(Debug)]
-pub struct Entity {
+pub struct Entity<'hir> {
     pub type_id: TypeId,
     pub name: Ident,
-    pub ports: Vec<Port>,
+    pub ports: &'hir [Port],
 }
 
 #[derive(Debug)]
@@ -41,10 +41,10 @@ pub struct Port {
 }
 
 #[derive(Debug)]
-pub struct Record {
+pub struct Record<'hir> {
     pub type_id: TypeId,
     pub name: Ident,
-    pub fields: Vec<Field>,
+    pub fields: &'hir [Field],
 }
 
 #[derive(Debug)]

@@ -36,47 +36,39 @@ impl<'ir, 'ast> RefineTypesStage<'ir, '_> {
     }
 
     fn refine_entity(&self, id: TypeId, e: &ast::Entity) -> RefinedType<'ir> {
-        let ports = e
-            .ports
-            .iter()
-            .map(|port| Port {
-                kind: port.kind.0,
-                name: port.name,
-                ty: (),
-            })
-            .collect();
+        let ports = e.ports.iter().map(|port| Port {
+            kind: port.kind.0,
+            name: port.name,
+            ty: (),
+        });
 
         RefinedType::Entity(Entity {
             type_id: id,
             name: e.name,
-            ports,
+            ports: self.arena.alloc_slice_fill_iter(ports),
         })
     }
 
     fn refine_record(&self, id: TypeId, r: &ast::Record) -> RefinedType<'ir> {
-        let fields = r
-            .fields
-            .iter()
-            .map(|field| Field {
-                name: field.name,
-                ty: (),
-            })
-            .collect();
+        let fields = r.fields.iter().map(|field| Field {
+            name: field.name,
+            ty: (),
+        });
 
         RefinedType::Record(Record {
             type_id: id,
             name: r.name,
-            fields,
+            fields: self.arena.alloc_slice_fill_iter(fields),
         })
     }
 
     fn refine_enum(&self, id: TypeId, e: &ast::Enum) -> RefinedType<'ir> {
+        let varaints = e.variants.iter().map(|&ident| Variant { ident });
+
         RefinedType::Enum(Enum {
             type_id: id,
             name: e.name,
-            variants: self
-                .arena
-                .alloc_slice_fill_iter(e.variants.iter().map(|&ident| Variant { ident })),
+            variants: self.arena.alloc_slice_fill_iter(varaints),
         })
     }
 }
