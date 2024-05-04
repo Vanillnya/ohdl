@@ -12,14 +12,14 @@ use crate::{
     span::Spanned,
 };
 
-pub struct UnresolvedStage<'ir, 'b> {
+pub struct RoughStage<'ir, 'b> {
     pub arena: &'ir Bump,
     pub registry: &'b mut Registry<'ir>,
     pub name_lookup: &'b mut PreFlattenNameLookup,
     pub import_bucket: &'b mut ImportBucket<'ir>,
 }
 
-impl<'ir> UnresolvedStage<'ir, '_> {
+impl<'ir> RoughStage<'ir, '_> {
     pub fn lower(mut self, root: &[Spanned<ast::Item<'_>>]) {
         for item in root {
             self.lower_item(self.name_lookup.root, item);
