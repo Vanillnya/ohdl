@@ -10,7 +10,7 @@ use crate::{
         import_bucket::ImportBucket,
         name_lookup::NameLookup,
         registry::Registry,
-        stages::{flatten_lookup::FlattenLookupStage, unresolved::UnresolvedStage},
+        stages::{flatten_lookup::FlattenLookupStage, rough::RoughStage},
     },
     lexer::Lexer,
 };
@@ -59,13 +59,13 @@ fn main() -> Result<(), ()> {
     let mut import_bucket = ImportBucket::new();
 
     {
-        let unresolved = UnresolvedStage {
+        let rough = RoughStage {
             arena: &ir_arena,
             registry: &mut registry,
             name_lookup: &mut name_lookup,
             import_bucket: &mut import_bucket,
         };
-        unresolved.lower(&root);
+        rough.lower(&root);
         report_messages(&source);
     }
 
