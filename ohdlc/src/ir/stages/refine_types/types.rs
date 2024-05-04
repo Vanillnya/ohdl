@@ -37,7 +37,7 @@ pub struct Port {
     // TODO: we should agree on whether to use ast types in ir or ir types in ast, not both.
     pub kind: PortKind,
     pub name: Ident,
-    pub ty: (),
+    pub ty: Option<TypeId>,
 }
 
 #[derive(Debug)]
@@ -50,7 +50,7 @@ pub struct Record<'hir> {
 #[derive(Debug)]
 pub struct Field {
     pub name: Ident,
-    pub ty: (),
+    pub ty: Option<TypeId>,
 }
 
 #[derive(Debug)]

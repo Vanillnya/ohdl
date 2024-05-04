@@ -12,7 +12,7 @@ use crate::{
     symbol::Ident,
 };
 
-use self::types::RoughType;
+use self::types::{RoughType, RoughTypeItem};
 
 pub mod types;
 
@@ -35,9 +35,9 @@ impl<'ir, 'ast> RoughStage<'ir, '_, 'ast> {
         match item {
             ast::Item::Use(u) => self.lower_use(scope, u),
             ast::Item::Module(m) => self.lower_mod(scope, m),
-            ast::Item::Entity(e) => self.introduce_type(scope, e.name, RoughType::Entity(e)),
-            ast::Item::Record(r) => self.introduce_type(scope, r.name, RoughType::Record(r)),
-            ast::Item::Enum(e) => self.introduce_type(scope, e.name, RoughType::Enum(e)),
+            ast::Item::Entity(e) => self.introduce_type(scope, e.name, RoughTypeItem::Entity(e)),
+            ast::Item::Record(r) => self.introduce_type(scope, r.name, RoughTypeItem::Record(r)),
+            ast::Item::Enum(e) => self.introduce_type(scope, e.name, RoughTypeItem::Enum(e)),
             ast::Item::Arch(_) => {}
         }
     }
@@ -75,8 +75,8 @@ impl<'ir, 'ast> RoughStage<'ir, '_, 'ast> {
         }
     }
 
-    fn introduce_type(&mut self, scope: ScopeId, name: Ident, t: RoughType<'ast>) {
-        let id = self.registry.types.insert(t);
+    fn introduce_type(&mut self, scope: ScopeId, name: Ident, t: RoughTypeItem<'ast>) {
+        let id = self.registry.types.insert(RoughType(scope, t));
 
         self.name_lookup
             .introduce(scope, name, Resolvable::Resolved(Resolved::Type(id)));

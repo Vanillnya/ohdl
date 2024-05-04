@@ -89,10 +89,14 @@ fn main() -> Result<(), ()> {
         let refine_types = RefineTypesStage {
             arena: &ir_arena,
             name_lookup: &name_lookup,
+            module_registry: &registry.modules,
         };
-        let refined_types = refine_types.lower(registry);
+        let refined_types = refine_types.lower(registry.types);
         report_messages(&source);
-        refined_types
+        Registry {
+            modules: registry.modules,
+            types: refined_types,
+        }
     };
 
     println!("{refined_types:#?}");
