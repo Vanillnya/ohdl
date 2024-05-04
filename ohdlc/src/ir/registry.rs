@@ -1,8 +1,6 @@
 use surotto::{simple::SimpleSurotto, simple_key};
 
-use super::
-    modules::{Module, ModuleId}
-;
+use super::modules::{Module, ModuleId};
 
 #[derive(Debug)]
 pub struct Registry<T> {

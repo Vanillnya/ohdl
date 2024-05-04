@@ -10,7 +10,9 @@ use crate::{
         import_bucket::ImportBucket,
         name_lookup::NameLookup,
         registry::Registry,
-        stages::{flatten_lookup::FlattenLookupStage, refine_types::RefineTypesStage, rough::RoughStage},
+        stages::{
+            flatten_lookup::FlattenLookupStage, refine_types::RefineTypesStage, rough::RoughStage,
+        },
     },
     lexer::Lexer,
 };

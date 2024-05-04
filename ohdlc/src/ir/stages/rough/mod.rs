@@ -7,9 +7,9 @@ use crate::{
         modules::Module,
         name_lookup::{PreFlattenNameLookup, Resolvable, Resolved, ScopeId},
         registry::Registry,
-        
     },
-    span::Spanned, symbol::Ident,
+    span::Spanned,
+    symbol::Ident,
 };
 
 use self::types::RoughType;
@@ -75,8 +75,7 @@ impl<'ir, 'ast> RoughStage<'ir, '_, 'ast> {
         }
     }
 
-    fn introduce_type(&mut self, scope: ScopeId, name: Ident, t: RoughType<'ast>)
-    {
+    fn introduce_type(&mut self, scope: ScopeId, name: Ident, t: RoughType<'ast>) {
         let id = self.registry.types.insert(t);
 
         self.name_lookup
