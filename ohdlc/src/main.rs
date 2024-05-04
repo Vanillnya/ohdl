@@ -64,8 +64,9 @@ fn main() -> Result<(), ()> {
             registry: &mut registry,
             name_lookup: &mut name_lookup,
             import_bucket: &mut import_bucket,
+            root: &root,
         };
-        rough.lower(&root);
+        rough.lower();
         report_messages(&source);
     }
 

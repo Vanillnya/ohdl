@@ -5,25 +5,25 @@ use crate::{
 };
 
 #[derive(Debug)]
-pub enum Stmt<'a> {
+pub enum Stmt<'ast> {
     /// ```ohdl
     /// MyEntity::MyArch {
     ///     i <= i,
     ///     o => o,
     /// }
     /// ```
-    Place(PlaceStmt<'a>),
+    Place(PlaceStmt<'ast>),
     /// ```ohdl
     /// val <= a or b;
     /// ```
-    Assign(AssignStmt<'a>),
+    Assign(AssignStmt<'ast>),
 }
 
 #[derive(Debug)]
-pub struct PlaceStmt<'a> {
+pub struct PlaceStmt<'ast> {
     pub entity_ty: Spanned<Type>,
     pub arch_ty: Spanned<Type>,
-    pub links: Vec<Spanned<PlaceLink<'a>>>,
+    pub links: Vec<Spanned<PlaceLink<'ast>>>,
 }
 
 /// ```ohdl
@@ -31,15 +31,15 @@ pub struct PlaceStmt<'a> {
 /// src => wire dst;
 /// ```
 #[derive(Debug)]
-pub struct PlaceLink<'a> {
+pub struct PlaceLink<'ast> {
     pub src: Ident,
     pub arrow_span: Span,
-    pub link: PlaceLinkInternal<'a>,
+    pub link: PlaceLinkInternal<'ast>,
 }
 
 #[derive(Debug)]
-pub enum PlaceLinkInternal<'a> {
-    Ingoing(Spanned<Expr<'a>>),
+pub enum PlaceLinkInternal<'ast> {
+    Ingoing(Spanned<Expr<'ast>>),
     Outgoing(Spanned<Connector>),
 }
 
@@ -50,7 +50,7 @@ pub enum Connector {
 }
 
 #[derive(Debug)]
-pub struct AssignStmt<'a> {
+pub struct AssignStmt<'ast> {
     pub assignee: Ident,
-    pub value: Expr<'a>,
+    pub value: Expr<'ast>,
 }

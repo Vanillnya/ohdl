@@ -1,15 +1,15 @@
 use crate::symbol::Ident;
 
 #[derive(Debug)]
-pub enum Expr<'a> {
+pub enum Expr<'ast> {
     Binary {
-        left: &'a Expr<'a>,
-        right: &'a Expr<'a>,
+        left: &'ast Expr<'ast>,
+        right: &'ast Expr<'ast>,
         operator: BinaryOperator,
     },
     Unary {
         operator: UnaryOperator,
-        value: &'a Expr<'a>,
+        value: &'ast Expr<'ast>,
     },
     Primary(Ident),
 }
