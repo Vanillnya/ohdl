@@ -31,7 +31,7 @@ impl<'ir, 'ast> RefineTypesStage<'ir, '_> {
         match rough.1 {
             RoughTypeItem::Entity(e) => self.refine_entity(id, rough.0, e),
             RoughTypeItem::Record(r) => self.refine_record(id, rough.0, r),
-            RoughTypeItem::Enum(e) => self.refine_enum(id, rough.0, e),
+            RoughTypeItem::Enum(e) => self.refine_enum(id, e),
         }
     }
 
@@ -62,7 +62,7 @@ impl<'ir, 'ast> RefineTypesStage<'ir, '_> {
         })
     }
 
-    fn refine_enum(&self, id: TypeId, scope: ScopeId, e: &ast::Enum) -> RefinedType<'ir> {
+    fn refine_enum(&self, id: TypeId, e: &ast::Enum) -> RefinedType<'ir> {
         let varaints = e.variants.iter().map(|&ident| Variant { ident });
 
         RefinedType::Enum(Enum {
@@ -73,21 +73,35 @@ impl<'ir, 'ast> RefineTypesStage<'ir, '_> {
     }
 
     fn lookup_type(&self, mut scope: ScopeId, ty: &ast::Type) -> Option<TypeId> {
-        for segment in ty.path.0 .0.iter() {
-            let lookup = self.name_lookup.lookup(scope, &segment.0, ty.path.0 .1);
-            match lookup {
-                // TODO: check if path is not at end
-                Some(Resolved::Type(t)) => return Some(*t),
-                Some(Resolved::Module(m)) => {
+        let mut path = ty.path.0 .0.as_slice();
+        // TODO: can we check if we're the last in a for loop here?
+        loop {
+            let is_terminal = path.len() == 1;
+            let segment = path[0].0;
+
+            let lookup = self.name_lookup.lookup(scope, &segment, ty.path.0 .1);
+            match (is_terminal, lookup) {
+                (false, Some(Resolved::Type(_))) => {
+                    MESSAGES.report(Message::use_continues_after_type(segment.1));
+                    return None;
+                }
+                (false, Some(Resolved::Module(m))) => {
                     scope = self.module_registry[*m].scope;
                 }
-                None => {
-                    MESSAGES.report(Message::could_not_resolve(segment.0));
+
+                (true, Some(Resolved::Type(t))) => return Some(*t),
+                (true, Some(Resolved::Module(_))) => {
+                    MESSAGES.report(Message::wrong_path_end(segment, "Type", "Module"));
+                    return None;
+                }
+
+                (_, None) => {
+                    MESSAGES.report(Message::could_not_resolve(segment));
                     return None;
                 }
             }
+
+            path = &path[1..];
         }
-        // TODO: report error when last one is not a type
-        return None;
     }
 }
