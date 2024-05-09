@@ -1,0 +1,247 @@
+---
+source: tests/basic.rs
+expression: refined_types
+---
+Registry {
+    modules: {
+        ModuleId(
+            0,
+        ): Module {
+            name: `std`:4..7,
+            scope: ScopeId(
+                1,
+            ),
+        },
+        ModuleId(
+            1,
+        ): Module {
+            name: `x`:97..98,
+            scope: ScopeId(
+                2,
+            ),
+        },
+        ModuleId(
+            2,
+        ): Module {
+            name: `y`:123..124,
+            scope: ScopeId(
+                3,
+            ),
+        },
+        ModuleId(
+            3,
+        ): Module {
+            name: `a`:463..464,
+            scope: ScopeId(
+                4,
+            ),
+        },
+        ModuleId(
+            4,
+        ): Module {
+            name: `other`:496..501,
+            scope: ScopeId(
+                5,
+            ),
+        },
+        ModuleId(
+            5,
+        ): Module {
+            name: `b`:513..514,
+            scope: ScopeId(
+                6,
+            ),
+        },
+    },
+    types: {
+        TypeId(
+            0,
+        ): Enum(
+            Enum {
+                type_id: TypeId(
+                    0,
+                ),
+                name: `Logical`:20..27,
+                variants: [
+                    Variant {
+                        ident: `High`:39..43,
+                    },
+                    Variant {
+                        ident: `Low`:54..57,
+                    },
+                ],
+            },
+        ),
+        TypeId(
+            1,
+        ): Record(
+            Record {
+                type_id: TypeId(
+                    1,
+                ),
+                name: `MyRecord`:152..160,
+                fields: [
+                    Field {
+                        name: `a`:168..169,
+                        ty: Some(
+                            TypeId(
+                                0,
+                            ),
+                        ),
+                    },
+                    Field {
+                        name: `b`:185..186,
+                        ty: Some(
+                            TypeId(
+                                0,
+                            ),
+                        ),
+                    },
+                ],
+            },
+        ),
+        TypeId(
+            2,
+        ): Enum(
+            Enum {
+                type_id: TypeId(
+                    2,
+                ),
+                name: `MyEnum`:208..214,
+                variants: [
+                    Variant {
+                        ident: `A`:222..223,
+                    },
+                    Variant {
+                        ident: `B`:230..231,
+                    },
+                    Variant {
+                        ident: `C`:238..239,
+                    },
+                    Variant {
+                        ident: `D`:246..247,
+                    },
+                    Variant {
+                        ident: `E`:254..255,
+                    },
+                ],
+            },
+        ),
+        TypeId(
+            3,
+        ): Entity(
+            Entity {
+                type_id: TypeId(
+                    3,
+                ),
+                name: `HalfAdder`:270..279,
+                ports: [
+                    Port {
+                        kind: Input,
+                        name: `a`:291..292,
+                        ty: Some(
+                            TypeId(
+                                0,
+                            ),
+                        ),
+                    },
+                    Port {
+                        kind: Input,
+                        name: `b`:312..313,
+                        ty: Some(
+                            TypeId(
+                                0,
+                            ),
+                        ),
+                    },
+                    Port {
+                        kind: Output,
+                        name: `o`:333..334,
+                        ty: Some(
+                            TypeId(
+                                0,
+                            ),
+                        ),
+                    },
+                    Port {
+                        kind: Output,
+                        name: `c`:354..355,
+                        ty: Some(
+                            TypeId(
+                                0,
+                            ),
+                        ),
+                    },
+                ],
+            },
+        ),
+        TypeId(
+            4,
+        ): Entity(
+            Entity {
+                type_id: TypeId(
+                    4,
+                ),
+                name: `Lol`:533..536,
+                ports: [],
+            },
+        ),
+        TypeId(
+            5,
+        ): Entity(
+            Entity {
+                type_id: TypeId(
+                    5,
+                ),
+                name: `FullAdder`:561..570,
+                ports: [
+                    Port {
+                        kind: Input,
+                        name: `a`:582..583,
+                        ty: Some(
+                            TypeId(
+                                0,
+                            ),
+                        ),
+                    },
+                    Port {
+                        kind: Input,
+                        name: `b`:603..604,
+                        ty: Some(
+                            TypeId(
+                                0,
+                            ),
+                        ),
+                    },
+                    Port {
+                        kind: Input,
+                        name: `ci`:624..626,
+                        ty: Some(
+                            TypeId(
+                                0,
+                            ),
+                        ),
+                    },
+                    Port {
+                        kind: Output,
+                        name: `o`:646..647,
+                        ty: Some(
+                            TypeId(
+                                0,
+                            ),
+                        ),
+                    },
+                    Port {
+                        kind: Output,
+                        name: `co`:667..669,
+                        ty: Some(
+                            TypeId(
+                                0,
+                            ),
+                        ),
+                    },
+                ],
+            },
+        ),
+    },
+}

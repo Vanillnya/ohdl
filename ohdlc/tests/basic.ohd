@@ -1,0 +1,78 @@
+mod std {
+    enum Logical {
+        High,
+        Low,
+    }
+}
+use ::std::Logical;
+
+mod x {
+    use y;
+}
+
+mod y {
+    use x;
+}
+
+record MyRecord {
+    a: Logical,
+    b: Logical,
+}
+
+enum MyEnum {
+    A,
+    B,
+    C,
+    D,
+    E,
+}
+
+entity HalfAdder {
+    in  a: Logical,
+    in  b: Logical,
+    out o: Logical,
+    out c: Logical,
+}
+
+arch RTL for HalfAdder {
+    o <= a xor b;
+    c <= a and b;
+}
+
+use a::b::Lol;
+
+mod a {
+    use other::b;
+}
+
+mod other {
+    mod b {
+        entity Lol { }
+    }
+}
+
+entity FullAdder {
+    in  a: Logical,
+    in  b: Logical,
+    in  ci: Logical,
+    out o: Logical,
+    out co: Logical,
+}
+
+arch RTL for FullAdder {
+    HalfAdder(RTL) {
+        a <= a,
+        b <= b,
+        o => signal s,
+        c => signal cb,
+    }
+
+    HalfAdder(RTL) {
+        a <= s,
+        b <= ci,
+        o => o,
+        c => signal cc,
+    }
+
+    co <= cb or cc;
+}
