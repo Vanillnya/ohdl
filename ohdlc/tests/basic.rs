@@ -1,8 +1,6 @@
-#![deny(rust_2018_idioms)]
-
 use ariadne::{Label, Report};
 use bumpalo::Bump;
-
+use insta::assert_debug_snapshot;
 use ohdlc::{
     ir::{
         import_bucket::ImportBucket,
@@ -17,14 +15,15 @@ use ohdlc::{
     Source, MESSAGES,
 };
 
-fn main() -> Result<(), ()> {
-    let source = Source("work.ohd".to_owned(), include_str!("work.ohd"));
+#[test]
+fn main() {
+    let source = Source("work.ohd".to_owned(), include_str!("basic.ohd"));
 
     println!("[STAGE] Lexer");
 
     let lexer = Lexer::new(&source.1);
     report_messages(&source);
-    let lexer = lexer?;
+    let lexer = lexer.unwrap();
 
     println!("[STAGE] Parser");
 
@@ -38,9 +37,11 @@ fn main() -> Result<(), ()> {
         Err(messages) => {
             MESSAGES.extend(messages);
             report_messages(&source);
-            return Err(());
+            panic!();
         }
     };
+
+    assert_debug_snapshot!(root);
 
     let ir_arena = Bump::new();
     let mut registry = Registry::default();
@@ -86,9 +87,7 @@ fn main() -> Result<(), ()> {
         }
     };
 
-    println!("{refined_types:#?}");
-
-    Ok(())
+    assert_debug_snapshot!(refined_types);
 }
 
 fn report_messages(source: &Source<'_>) {
