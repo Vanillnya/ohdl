@@ -1,5 +1,6 @@
 ---
 source: tests/basic.rs
+assertion_line: 90
 expression: refined_types
 ---
 Registry {
@@ -15,7 +16,7 @@ Registry {
         ModuleId(
             1,
         ): Module {
-            name: `x`:97..98,
+            name: `x`:89..90,
             scope: ScopeId(
                 2,
             ),
@@ -23,7 +24,7 @@ Registry {
         ModuleId(
             2,
         ): Module {
-            name: `y`:123..124,
+            name: `y`:111..112,
             scope: ScopeId(
                 3,
             ),
@@ -31,7 +32,7 @@ Registry {
         ModuleId(
             3,
         ): Module {
-            name: `a`:463..464,
+            name: `a`:420..421,
             scope: ScopeId(
                 4,
             ),
@@ -39,7 +40,7 @@ Registry {
         ModuleId(
             4,
         ): Module {
-            name: `other`:496..501,
+            name: `other`:449..454,
             scope: ScopeId(
                 5,
             ),
@@ -47,7 +48,7 @@ Registry {
         ModuleId(
             5,
         ): Module {
-            name: `b`:513..514,
+            name: `b`:465..466,
             scope: ScopeId(
                 6,
             ),
@@ -61,13 +62,13 @@ Registry {
                 type_id: TypeId(
                     0,
                 ),
-                name: `Logical`:20..27,
+                name: `Logical`:19..26,
                 variants: [
                     Variant {
-                        ident: `High`:39..43,
+                        ident: `High`:37..41,
                     },
                     Variant {
-                        ident: `Low`:54..57,
+                        ident: `Low`:51..54,
                     },
                 ],
             },
@@ -79,10 +80,10 @@ Registry {
                 type_id: TypeId(
                     1,
                 ),
-                name: `MyRecord`:152..160,
+                name: `MyRecord`:136..144,
                 fields: [
                     Field {
-                        name: `a`:168..169,
+                        name: `a`:151..152,
                         ty: Some(
                             TypeId(
                                 0,
@@ -90,7 +91,7 @@ Registry {
                         ),
                     },
                     Field {
-                        name: `b`:185..186,
+                        name: `b`:167..168,
                         ty: Some(
                             TypeId(
                                 0,
@@ -107,22 +108,22 @@ Registry {
                 type_id: TypeId(
                     2,
                 ),
-                name: `MyEnum`:208..214,
+                name: `MyEnum`:187..193,
                 variants: [
                     Variant {
-                        ident: `A`:222..223,
+                        ident: `A`:200..201,
                     },
                     Variant {
-                        ident: `B`:230..231,
+                        ident: `B`:207..208,
                     },
                     Variant {
-                        ident: `C`:238..239,
+                        ident: `C`:214..215,
                     },
                     Variant {
-                        ident: `D`:246..247,
+                        ident: `D`:221..222,
                     },
                     Variant {
-                        ident: `E`:254..255,
+                        ident: `E`:228..229,
                     },
                 ],
             },
@@ -134,11 +135,11 @@ Registry {
                 type_id: TypeId(
                     3,
                 ),
-                name: `HalfAdder`:270..279,
+                name: `HalfAdder`:241..250,
                 ports: [
                     Port {
                         kind: Input,
-                        name: `a`:291..292,
+                        name: `a`:261..262,
                         ty: Some(
                             TypeId(
                                 0,
@@ -147,7 +148,7 @@ Registry {
                     },
                     Port {
                         kind: Input,
-                        name: `b`:312..313,
+                        name: `b`:281..282,
                         ty: Some(
                             TypeId(
                                 0,
@@ -156,7 +157,7 @@ Registry {
                     },
                     Port {
                         kind: Output,
-                        name: `o`:333..334,
+                        name: `o`:301..302,
                         ty: Some(
                             TypeId(
                                 0,
@@ -165,7 +166,7 @@ Registry {
                     },
                     Port {
                         kind: Output,
-                        name: `c`:354..355,
+                        name: `c`:321..322,
                         ty: Some(
                             TypeId(
                                 0,
@@ -182,7 +183,7 @@ Registry {
                 type_id: TypeId(
                     4,
                 ),
-                name: `Lol`:533..536,
+                name: `Lol`:484..487,
                 ports: [],
             },
         ),
@@ -193,11 +194,11 @@ Registry {
                 type_id: TypeId(
                     5,
                 ),
-                name: `FullAdder`:561..570,
+                name: `FullAdder`:508..517,
                 ports: [
                     Port {
                         kind: Input,
-                        name: `a`:582..583,
+                        name: `a`:528..529,
                         ty: Some(
                             TypeId(
                                 0,
@@ -206,7 +207,7 @@ Registry {
                     },
                     Port {
                         kind: Input,
-                        name: `b`:603..604,
+                        name: `b`:548..549,
                         ty: Some(
                             TypeId(
                                 0,
@@ -215,7 +216,7 @@ Registry {
                     },
                     Port {
                         kind: Input,
-                        name: `ci`:624..626,
+                        name: `ci`:568..570,
                         ty: Some(
                             TypeId(
                                 0,
@@ -224,7 +225,7 @@ Registry {
                     },
                     Port {
                         kind: Output,
-                        name: `o`:646..647,
+                        name: `o`:589..590,
                         ty: Some(
                             TypeId(
                                 0,
@@ -233,7 +234,7 @@ Registry {
                     },
                     Port {
                         kind: Output,
-                        name: `co`:667..669,
+                        name: `co`:609..611,
                         ty: Some(
                             TypeId(
                                 0,
