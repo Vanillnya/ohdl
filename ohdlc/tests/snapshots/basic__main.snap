@@ -1,0 +1,544 @@
+---
+source: tests/basic.rs
+expression: root
+---
+[
+    Module(
+        Module {
+            name: `std`:34..37,
+            items: [
+                Enum(
+                    Enum {
+                        name: `Logical`:49..56,
+                        variants: [
+                            `High`:67..71,
+                            `Low`:81..84,
+                        ],
+                    },
+                ):44..93,
+            ],
+        },
+    ):30..97,
+    Use(
+        Use {
+            path: Path(
+                [
+                    PathSegment(
+                        `std`:100..103,
+                    ),
+                    PathSegment(
+                        `Logical`:105..112,
+                    ),
+                ],
+                Root,
+            ):98..113,
+        },
+    ):94..118,
+    Module(
+        Module {
+            name: `x`:119..120,
+            items: [
+                Use(
+                    Use {
+                        path: Path(
+                            [
+                                PathSegment(
+                                    `y`:131..132,
+                                ),
+                            ],
+                            Local,
+                        ):131..133,
+                    },
+                ):127..135,
+            ],
+        },
+    ):115..140,
+    Module(
+        Module {
+            name: `y`:141..142,
+            items: [
+                Use(
+                    Use {
+                        path: Path(
+                            [
+                                PathSegment(
+                                    `x`:153..154,
+                                ),
+                            ],
+                            Local,
+                        ):153..155,
+                    },
+                ):149..157,
+            ],
+        },
+    ):137..165,
+    Record(
+        Record {
+            name: `MyRecord`:166..174,
+            fields: [
+                Field {
+                    name: `a`:181..182,
+                    ty: Type {
+                        path: Path(
+                            [
+                                PathSegment(
+                                    `Logical`:184..191,
+                                ),
+                            ],
+                            Local,
+                        ):184..192,
+                    }:184..192,
+                }:181..192,
+                Field {
+                    name: `b`:197..198,
+                    ty: Type {
+                        path: Path(
+                            [
+                                PathSegment(
+                                    `Logical`:200..207,
+                                ),
+                            ],
+                            Local,
+                        ):200..208,
+                    }:200..208,
+                }:197..208,
+            ],
+        },
+    ):159..216,
+    Enum(
+        Enum {
+            name: `MyEnum`:217..223,
+            variants: [
+                `A`:230..231,
+                `B`:237..238,
+                `C`:244..245,
+                `D`:251..252,
+                `E`:258..259,
+            ],
+        },
+    ):212..270,
+    Entity(
+        Entity {
+            name: `HalfAdder`:271..280,
+            ports: [
+                Port {
+                    kind: Input:287..289,
+                    name: `a`:291..292,
+                    ty: Type {
+                        path: Path(
+                            [
+                                PathSegment(
+                                    `Logical`:294..301,
+                                ),
+                            ],
+                            Local,
+                        ):294..302,
+                    }:294..302,
+                }:287..302,
+                Port {
+                    kind: Input:307..309,
+                    name: `b`:311..312,
+                    ty: Type {
+                        path: Path(
+                            [
+                                PathSegment(
+                                    `Logical`:314..321,
+                                ),
+                            ],
+                            Local,
+                        ):314..322,
+                    }:314..322,
+                }:307..322,
+                Port {
+                    kind: Output:327..330,
+                    name: `o`:331..332,
+                    ty: Type {
+                        path: Path(
+                            [
+                                PathSegment(
+                                    `Logical`:334..341,
+                                ),
+                            ],
+                            Local,
+                        ):334..342,
+                    }:334..342,
+                }:327..342,
+                Port {
+                    kind: Output:347..350,
+                    name: `c`:351..352,
+                    ty: Type {
+                        path: Path(
+                            [
+                                PathSegment(
+                                    `Logical`:354..361,
+                                ),
+                            ],
+                            Local,
+                        ):354..362,
+                    }:354..362,
+                }:347..362,
+            ],
+        },
+    ):264..370,
+    Arch(
+        Arch {
+            name: `RTL`:371..374,
+            ty: Type {
+                path: Path(
+                    [
+                        PathSegment(
+                            `HalfAdder`:379..388,
+                        ),
+                    ],
+                    Local,
+                ):379..390,
+            }:379..390,
+            stmts: [
+                Assign(
+                    AssignStmt {
+                        assignee: `o`:395..396,
+                        value: Binary {
+                            left: Primary(
+                                `a`:400..401,
+                            ),
+                            right: Primary(
+                                `b`:406..407,
+                            ),
+                            operator: Xor,
+                        },
+                    },
+                ):395..414,
+                Assign(
+                    AssignStmt {
+                        assignee: `c`:413..414,
+                        value: Binary {
+                            left: Primary(
+                                `a`:418..419,
+                            ),
+                            right: Primary(
+                                `b`:424..425,
+                            ),
+                            operator: And,
+                        },
+                    },
+                ):413..428,
+            ],
+        },
+    ):366..433,
+    Use(
+        Use {
+            path: Path(
+                [
+                    PathSegment(
+                        `a`:434..435,
+                    ),
+                    PathSegment(
+                        `b`:437..438,
+                    ),
+                    PathSegment(
+                        `Lol`:440..443,
+                    ),
+                ],
+                Local,
+            ):434..444,
+        },
+    ):430..449,
+    Module(
+        Module {
+            name: `a`:450..451,
+            items: [
+                Use(
+                    Use {
+                        path: Path(
+                            [
+                                PathSegment(
+                                    `other`:462..467,
+                                ),
+                                PathSegment(
+                                    `b`:469..470,
+                                ),
+                            ],
+                            Local,
+                        ):462..471,
+                    },
+                ):458..473,
+            ],
+        },
+    ):446..478,
+    Module(
+        Module {
+            name: `other`:479..484,
+            items: [
+                Module(
+                    Module {
+                        name: `b`:495..496,
+                        items: [
+                            Entity(
+                                Entity {
+                                    name: `Lol`:514..517,
+                                    ports: [],
+                                },
+                            ):507..527,
+                        ],
+                    },
+                ):491..529,
+            ],
+        },
+    ):475..537,
+    Entity(
+        Entity {
+            name: `FullAdder`:538..547,
+            ports: [
+                Port {
+                    kind: Input:554..556,
+                    name: `a`:558..559,
+                    ty: Type {
+                        path: Path(
+                            [
+                                PathSegment(
+                                    `Logical`:561..568,
+                                ),
+                            ],
+                            Local,
+                        ):561..569,
+                    }:561..569,
+                }:554..569,
+                Port {
+                    kind: Input:574..576,
+                    name: `b`:578..579,
+                    ty: Type {
+                        path: Path(
+                            [
+                                PathSegment(
+                                    `Logical`:581..588,
+                                ),
+                            ],
+                            Local,
+                        ):581..589,
+                    }:581..589,
+                }:574..589,
+                Port {
+                    kind: Input:594..596,
+                    name: `ci`:598..600,
+                    ty: Type {
+                        path: Path(
+                            [
+                                PathSegment(
+                                    `Logical`:602..609,
+                                ),
+                            ],
+                            Local,
+                        ):602..610,
+                    }:602..610,
+                }:594..610,
+                Port {
+                    kind: Output:615..618,
+                    name: `o`:619..620,
+                    ty: Type {
+                        path: Path(
+                            [
+                                PathSegment(
+                                    `Logical`:622..629,
+                                ),
+                            ],
+                            Local,
+                        ):622..630,
+                    }:622..630,
+                }:615..630,
+                Port {
+                    kind: Output:635..638,
+                    name: `co`:639..641,
+                    ty: Type {
+                        path: Path(
+                            [
+                                PathSegment(
+                                    `Logical`:643..650,
+                                ),
+                            ],
+                            Local,
+                        ):643..651,
+                    }:643..651,
+                }:635..651,
+            ],
+        },
+    ):531..659,
+    Arch(
+        Arch {
+            name: `RTL`:660..663,
+            ty: Type {
+                path: Path(
+                    [
+                        PathSegment(
+                            `FullAdder`:668..677,
+                        ),
+                    ],
+                    Local,
+                ):668..679,
+            }:668..679,
+            stmts: [
+                Place(
+                    PlaceStmt {
+                        entity_ty: Type {
+                            path: Path(
+                                [
+                                    PathSegment(
+                                        `HalfAdder`:684..693,
+                                    ),
+                                ],
+                                Local,
+                            ):684..694,
+                        }:684..694,
+                        arch_ty: Type {
+                            path: Path(
+                                [
+                                    PathSegment(
+                                        `RTL`:694..697,
+                                    ),
+                                ],
+                                Local,
+                            ):694..698,
+                        }:694..698,
+                        links: [
+                            PlaceLink {
+                                src: `a`:709..710,
+                                arrow_span: Span(
+                                    711,
+                                    713,
+                                ),
+                                link: Ingoing(
+                                    Primary(
+                                        `a`:714..715,
+                                    ):714..716,
+                                ),
+                            }:709..716,
+                            PlaceLink {
+                                src: `b`:725..726,
+                                arrow_span: Span(
+                                    727,
+                                    729,
+                                ),
+                                link: Ingoing(
+                                    Primary(
+                                        `b`:730..731,
+                                    ):730..732,
+                                ),
+                            }:725..732,
+                            PlaceLink {
+                                src: `o`:741..742,
+                                arrow_span: Span(
+                                    743,
+                                    745,
+                                ),
+                                link: Outgoing(
+                                    NewSignal(
+                                        `s`:753..754,
+                                    ):746..755,
+                                ),
+                            }:741..755,
+                            PlaceLink {
+                                src: `c`:764..765,
+                                arrow_span: Span(
+                                    766,
+                                    768,
+                                ),
+                                link: Outgoing(
+                                    NewSignal(
+                                        `cb`:776..778,
+                                    ):769..779,
+                                ),
+                            }:764..779,
+                        ],
+                    },
+                ):684..800,
+                Place(
+                    PlaceStmt {
+                        entity_ty: Type {
+                            path: Path(
+                                [
+                                    PathSegment(
+                                        `HalfAdder`:791..800,
+                                    ),
+                                ],
+                                Local,
+                            ):791..801,
+                        }:791..801,
+                        arch_ty: Type {
+                            path: Path(
+                                [
+                                    PathSegment(
+                                        `RTL`:801..804,
+                                    ),
+                                ],
+                                Local,
+                            ):801..805,
+                        }:801..805,
+                        links: [
+                            PlaceLink {
+                                src: `a`:816..817,
+                                arrow_span: Span(
+                                    818,
+                                    820,
+                                ),
+                                link: Ingoing(
+                                    Primary(
+                                        `s`:821..822,
+                                    ):821..823,
+                                ),
+                            }:816..823,
+                            PlaceLink {
+                                src: `b`:832..833,
+                                arrow_span: Span(
+                                    834,
+                                    836,
+                                ),
+                                link: Ingoing(
+                                    Primary(
+                                        `ci`:837..839,
+                                    ):837..840,
+                                ),
+                            }:832..840,
+                            PlaceLink {
+                                src: `o`:849..850,
+                                arrow_span: Span(
+                                    851,
+                                    853,
+                                ),
+                                link: Outgoing(
+                                    Ref(
+                                        `o`:854..855,
+                                    ):854..856,
+                                ),
+                            }:849..856,
+                            PlaceLink {
+                                src: `c`:865..866,
+                                arrow_span: Span(
+                                    867,
+                                    869,
+                                ),
+                                link: Outgoing(
+                                    NewSignal(
+                                        `cc`:877..879,
+                                    ):870..880,
+                                ),
+                            }:865..880,
+                        ],
+                    },
+                ):791..894,
+                Assign(
+                    AssignStmt {
+                        assignee: `co`:892..894,
+                        value: Binary {
+                            left: Primary(
+                                `cb`:898..900,
+                            ),
+                            right: Primary(
+                                `cc`:904..906,
+                            ),
+                            operator: Or,
+                        },
+                    },
+                ):892..909,
+            ],
+        },
+    ):655..909,
+]
