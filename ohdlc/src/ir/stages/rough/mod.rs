@@ -3,7 +3,7 @@ use bumpalo::Bump;
 use crate::{
     ast,
     ir::{
-        import_bucket::{Import, ImportBucket},
+        import_bucket::{Import, ImportBucket, LookupStrategy},
         modules::Module,
         name_lookup::{PreFlattenNameLookup, Resolvable, Resolved, ScopeId},
         registry::Registry,
@@ -44,9 +44,15 @@ impl<'ir, 'ast> RoughStage<'ir, '_, 'ast> {
 
     fn lower_use(&mut self, scope: ScopeId, u: &'ast ast::Use) {
         let Spanned(path, span) = &u.path;
+
+        let import_scope = match path.1 {
+            ast::PathStart::Root => self.name_lookup.root,
+            ast::PathStart::Local => scope,
+        };
+
         let id = self.import_bucket.insert(Import {
-            scope,
-            start: path.1,
+            scope: import_scope,
+            strategy: LookupStrategy::Indirect,
             path: self
                 .arena
                 .alloc_slice_fill_iter(path.0.iter().map(|seg| seg.0)),

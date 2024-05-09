@@ -6,7 +6,6 @@ use std::{
 use surotto::{simple::SimpleSurotto, simple_key};
 
 use crate::{
-    ast::PathStart,
     ir::modules::ModuleId,
     message::Message,
     span::Span,
@@ -14,7 +13,10 @@ use crate::{
     MESSAGES,
 };
 
-use super::{import_bucket::ImportId, registry::TypeId};
+use super::{
+    import_bucket::{ImportId, LookupStrategy},
+    registry::TypeId,
+};
 
 simple_key!(
     pub struct ScopeId;
@@ -47,26 +49,26 @@ impl<L> NameLookup<L> {
         })
     }
 
-    pub fn lookup(&self, scope: ScopeId, lookup: &Ident, start: PathStart) -> Option<&L> {
-        self.lookup_ignore(scope, lookup, start, |_| false)
+    pub fn lookup(&self, scope: ScopeId, lookup: &Ident, strategy: LookupStrategy) -> Option<&L> {
+        self.lookup_ignore(scope, lookup, strategy, |_| false)
     }
 
     pub fn lookup_ignore<I: Fn(&L) -> bool>(
         &self,
         scope: ScopeId,
         lookup: &Ident,
-        start: PathStart,
+        strategy: LookupStrategy,
         ignore: I,
     ) -> Option<&L> {
         let mut scope = &self[scope];
         loop {
             match scope.entries.get(lookup) {
-                Some(resolvable) if (ignore)(&resolvable.1) => match (scope.parent, start) {
-                    (Some(p), PathStart::Indirect) => scope = &self[p],
+                Some(resolvable) if (ignore)(&resolvable.1) => match (scope.parent, strategy) {
+                    (Some(p), LookupStrategy::Indirect) => scope = &self[p],
                     _ => return None,
                 },
-                None => match (scope.parent, start) {
-                    (Some(p), PathStart::Indirect) => scope = &self[p],
+                None => match (scope.parent, strategy) {
+                    (Some(p), LookupStrategy::Indirect) => scope = &self[p],
                     _ => return None,
                 },
                 Some((_, l)) => return Some(l),

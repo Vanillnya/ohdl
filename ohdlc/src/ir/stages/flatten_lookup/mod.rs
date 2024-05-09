@@ -1,9 +1,8 @@
 use std::mem::MaybeUninit;
 
 use crate::{
-    ast::PathStart,
     ir::{
-        import_bucket::{ImportBucket, ImportId},
+        import_bucket::{ImportBucket, ImportId, LookupStrategy},
         name_lookup::{
             LookupScope, PostFlattenNameLookup, PreFlattenNameLookup, Resolvable, Resolved,
         },
@@ -36,7 +35,7 @@ impl<'ir> FlattenLookupStage<'ir, '_, '_> {
                     .lookup_ignore(
                         import.scope,
                         &segment,
-                        import.start,
+                        import.strategy,
                         |r| matches!(r, Resolvable::Import(i) if *i == id),
                     )
                     .cloned()
@@ -61,7 +60,7 @@ impl<'ir> FlattenLookupStage<'ir, '_, '_> {
                                     let module = &self.registry.modules[m];
                                     let sub_path = &import.path[1..];
                                     import.scope = module.scope;
-                                    import.start = PathStart::Direct;
+                                    import.strategy = LookupStrategy::Direct;
                                     import.path = sub_path;
 
                                     continue 'single_import;
@@ -124,7 +123,7 @@ impl<'ir> FlattenLookupStage<'ir, '_, '_> {
             match self.name_lookup.lookup_ignore(
                 import.scope,
                 &import.path[0],
-                import.start,
+                import.strategy,
                 |r| matches!(r, Resolvable::Import(i) if *i == id),
             ) {
                 Some(Resolvable::Import(dep)) => self.import_bucket.dependants[*dep].push(id),

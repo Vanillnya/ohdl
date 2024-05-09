@@ -3,14 +3,14 @@ use crate::{span::Spanned, symbol::Ident};
 #[derive(Debug)]
 pub struct Path(pub Vec<PathSegment>, pub PathStart);
 
-// TODO: don't we want this to be (or also be) root? maybe?
 #[derive(Debug, Clone, Copy)]
 pub enum PathStart {
-    /// Search directly in the given scope for the next path segment
+    /// Search in the root scope
     /// e.g. `::path::path`
-    Direct,
+    Root,
+    /// Search in the current scope and upwards
     /// e.g. `path::path`
-    Indirect,
+    Local,
 }
 
 #[derive(Debug, Clone, Copy)]

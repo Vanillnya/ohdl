@@ -3,6 +3,7 @@ use bumpalo::Bump;
 use crate::{
     ast,
     ir::{
+        import_bucket::LookupStrategy,
         name_lookup::{PostFlattenNameLookup, Resolved, ScopeId},
         registry::{ModuleRegistry, TypeId, TypeRegistry},
     },
@@ -72,21 +73,34 @@ impl<'ir, 'ast> RefineTypesStage<'ir, '_> {
         })
     }
 
-    fn lookup_type(&self, mut scope: ScopeId, ty: &ast::Type) -> Option<TypeId> {
-        let mut path = ty.path.0 .0.iter().peekable();
+    fn lookup_type(&self, scope: ScopeId, ty: &ast::Type) -> Option<TypeId> {
+        let mut lookup_scope = match ty.path.0 .1 {
+            ast::PathStart::Root => self.name_lookup.root,
+            ast::PathStart::Local => scope,
+        };
 
+        let mut path = ty.path.0 .0.iter().peekable();
+        let mut is_start = true;
         while let Some(segment) = path.next() {
             let is_terminal = path.peek().is_none();
             let segment = segment.0;
 
-            let lookup = self.name_lookup.lookup(scope, &segment, ty.path.0 .1);
+            let lookup = self.name_lookup.lookup(
+                lookup_scope,
+                &segment,
+                if is_start {
+                    LookupStrategy::Indirect
+                } else {
+                    LookupStrategy::Direct
+                },
+            );
             match (is_terminal, lookup) {
                 (false, Some(Resolved::Type(_))) => {
                     MESSAGES.report(Message::use_continues_after_type(segment.1));
                     return None;
                 }
                 (false, Some(Resolved::Module(m))) => {
-                    scope = self.module_registry[*m].scope;
+                    lookup_scope = self.module_registry[*m].scope;
                 }
 
                 (true, Some(Resolved::Type(t))) => return Some(*t),
@@ -100,6 +114,8 @@ impl<'ir, 'ast> RefineTypesStage<'ir, '_> {
                     return None;
                 }
             }
+
+            is_start = false;
         }
 
         return None;
