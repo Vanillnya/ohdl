@@ -13,9 +13,9 @@ impl<'s, 'a> Parser<'s, 'a> {
 
         let path_start = if self.kind()? == TokenKind::ColonColon {
             self.bump();
-            PathStart::Direct
+            PathStart::Root
         } else {
-            PathStart::Indirect
+            PathStart::Local
         };
 
         segments.push(PathSegment(self.ident()?));

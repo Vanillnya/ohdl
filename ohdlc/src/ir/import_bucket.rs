@@ -1,6 +1,6 @@
 use surotto::{simple::SimpleSurotto, simple_assoc::SimpleAssocSurotto, simple_key};
 
-use crate::{ast::PathStart, span::Span, symbol::Ident};
+use crate::{span::Span, symbol::Ident};
 
 use super::name_lookup::ScopeId;
 
@@ -31,22 +31,30 @@ impl<'ir> ImportBucket<'ir> {
 
 /// ```ohdl,ignore
 /// mod scope {
-///     // indirect
 ///     use path::path::path;
-///     // direct
-///     use ::path::path::path;
+///         ^^^^  ~~~~  ~~~~
+///          |     \direct/
+///       indirect
 /// }
 /// ```
 #[derive(Debug)]
 pub struct Import<'ir> {
     /// The scope we take the path from
     pub scope: ScopeId,
-    /// If the path starts directly or indirectly.
-    pub start: PathStart,
+    /// How the lookup of the first segment should be handled.
+    pub strategy: LookupStrategy,
     /// The path we have to take from the source
     pub path: &'ir [Ident],
     /// The whole import span
     pub span: Span,
     /// The scope the import will be added to
     pub target_scope: ScopeId,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum LookupStrategy {
+    /// Look only in the given scope.
+    Direct,
+    /// Look in the given scope and upwards.
+    Indirect,
 }
