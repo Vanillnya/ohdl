@@ -7,14 +7,14 @@ use surotto::{simple::SimpleSurotto, simple_key};
 
 use crate::{
     ast::PathStart,
-    ir::{modules::ModuleId, types::TypeId},
+    ir::modules::ModuleId,
     message::Message,
     span::Span,
     symbol::{Ident, Symbol},
     MESSAGES,
 };
 
-use super::import_bucket::ImportId;
+use super::{import_bucket::ImportId, registry::TypeId};
 
 simple_key!(
     pub struct ScopeId;

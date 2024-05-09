@@ -10,7 +10,9 @@ use crate::{
         import_bucket::ImportBucket,
         name_lookup::NameLookup,
         registry::Registry,
-        stages::{flatten_lookup::FlattenLookupStage, rough::RoughStage},
+        stages::{
+            flatten_lookup::FlattenLookupStage, refine_types::RefineTypesStage, rough::RoughStage,
+        },
     },
     lexer::Lexer,
 };
@@ -64,8 +66,9 @@ fn main() -> Result<(), ()> {
             registry: &mut registry,
             name_lookup: &mut name_lookup,
             import_bucket: &mut import_bucket,
+            root: &root,
         };
-        rough.lower(&root);
+        rough.lower();
         report_messages(&source);
     }
 
@@ -80,6 +83,23 @@ fn main() -> Result<(), ()> {
         report_messages(&source);
         lookup
     };
+    let name_lookup = name_lookup.unwrap();
+
+    let refined_types = {
+        let refine_types = RefineTypesStage {
+            arena: &ir_arena,
+            name_lookup: &name_lookup,
+            module_registry: &registry.modules,
+        };
+        let refined_types = refine_types.lower(registry.types);
+        report_messages(&source);
+        Registry {
+            modules: registry.modules,
+            types: refined_types,
+        }
+    };
+
+    println!("{refined_types:#?}");
 
     Ok(())
 }

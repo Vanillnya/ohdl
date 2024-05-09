@@ -154,4 +154,19 @@ impl Message {
             location: segment_span,
         }
     }
+
+    pub fn wrong_path_end(segment: Ident, expected: impl ToString, got: impl ToString) -> Self {
+        let segment_span = segment.1;
+        let expected = expected.to_string();
+        let got = got.to_string();
+        Message {
+            kind: ReportKind::Error,
+            message: format!("Expected path to {expected}, but actually ends at {got}"),
+            labels: vec![Label {
+                span: segment_span,
+                message: "Wrong kind of end here".to_owned(),
+            }],
+            location: segment_span,
+        }
+    }
 }

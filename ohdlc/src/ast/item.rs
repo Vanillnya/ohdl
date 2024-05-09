@@ -6,11 +6,11 @@ use super::{
 };
 
 #[derive(Debug)]
-pub enum Item<'a> {
+pub enum Item<'ast> {
     Use(Use),
-    Module(Module<'a>),
+    Module(Module<'ast>),
     Entity(Entity),
-    Arch(Arch<'a>),
+    Arch(Arch<'ast>),
     Record(Record),
     Enum(Enum),
 }
@@ -21,9 +21,9 @@ pub struct Use {
 }
 
 #[derive(Debug)]
-pub struct Module<'a> {
+pub struct Module<'ast> {
     pub name: Ident,
-    pub items: Vec<Spanned<Item<'a>>>,
+    pub items: Vec<Spanned<Item<'ast>>>,
 }
 
 #[derive(Debug)]
@@ -47,10 +47,10 @@ pub enum PortKind {
 }
 
 #[derive(Debug)]
-pub struct Arch<'a> {
+pub struct Arch<'ast> {
     pub name: Ident,
     pub ty: Spanned<Type>,
-    pub stmts: Vec<Spanned<Stmt<'a>>>,
+    pub stmts: Vec<Spanned<Stmt<'ast>>>,
 }
 
 #[derive(Debug)]

@@ -1,12 +1,25 @@
-use surotto::simple::SimpleSurotto;
+use surotto::{simple::SimpleSurotto, simple_key};
 
-use super::{
-    modules::{Module, ModuleId},
-    types::{Type, TypeId},
-};
+use super::modules::{Module, ModuleId};
 
-#[derive(Debug, Default)]
-pub struct Registry<'ir> {
-    pub modules: SimpleSurotto<ModuleId, Module>,
-    pub types: SimpleSurotto<TypeId, Type<'ir>>,
+#[derive(Debug)]
+pub struct Registry<T> {
+    pub modules: ModuleRegistry,
+    pub types: TypeRegistry<T>,
 }
+
+pub type ModuleRegistry = SimpleSurotto<ModuleId, Module>;
+pub type TypeRegistry<T> = SimpleSurotto<TypeId, T>;
+
+impl<T> Default for Registry<T> {
+    fn default() -> Self {
+        Self {
+            modules: SimpleSurotto::new(),
+            types: SimpleSurotto::new(),
+        }
+    }
+}
+
+simple_key!(
+    pub struct TypeId;
+);

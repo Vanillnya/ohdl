@@ -1,42 +1,35 @@
-use std::fmt::Debug;
-use surotto::simple_key;
-
-use crate::{ast::PortKind, symbol::Ident};
-
-simple_key!(
-    pub struct TypeId;
-);
+use crate::{ast::PortKind, ir::registry::TypeId, symbol::Ident};
 
 #[derive(Debug)]
-pub enum Type<'hir> {
-    Entity(Entity),
-    Record(Record),
+pub enum RefinedType<'hir> {
+    Entity(Entity<'hir>),
+    Record(Record<'hir>),
     Enum(Enum<'hir>),
 }
 
-impl Type<'_> {
+impl RefinedType<'_> {
     pub fn id(&self) -> TypeId {
         match self {
-            Type::Entity(e) => e.type_id,
-            Type::Record(r) => r.type_id,
-            Type::Enum(e) => e.type_id,
+            RefinedType::Entity(e) => e.type_id,
+            RefinedType::Record(r) => r.type_id,
+            RefinedType::Enum(e) => e.type_id,
         }
     }
 
     pub fn name(&self) -> Ident {
         match self {
-            Type::Entity(e) => e.name,
-            Type::Record(r) => r.name,
-            Type::Enum(e) => e.name,
+            RefinedType::Entity(e) => e.name,
+            RefinedType::Record(r) => r.name,
+            RefinedType::Enum(e) => e.name,
         }
     }
 }
 
 #[derive(Debug)]
-pub struct Entity {
+pub struct Entity<'hir> {
     pub type_id: TypeId,
     pub name: Ident,
-    pub ports: Vec<Port>,
+    pub ports: &'hir [Port],
 }
 
 #[derive(Debug)]
@@ -44,20 +37,20 @@ pub struct Port {
     // TODO: we should agree on whether to use ast types in ir or ir types in ast, not both.
     pub kind: PortKind,
     pub name: Ident,
-    pub ty: (),
+    pub ty: Option<TypeId>,
 }
 
 #[derive(Debug)]
-pub struct Record {
+pub struct Record<'hir> {
     pub type_id: TypeId,
     pub name: Ident,
-    pub fields: Vec<Field>,
+    pub fields: &'hir [Field],
 }
 
 #[derive(Debug)]
 pub struct Field {
     pub name: Ident,
-    pub ty: (),
+    pub ty: Option<TypeId>,
 }
 
 #[derive(Debug)]

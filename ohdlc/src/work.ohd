@@ -1,4 +1,10 @@
-//use ::std::Logical;
+mod std {
+    enum Logical {
+        High,
+        Low,
+    }
+}
+use ::std::Logical;
 
 mod x {
     use y;

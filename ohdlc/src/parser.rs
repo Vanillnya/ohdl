@@ -21,15 +21,15 @@ pub type PResult<T> = Result<T, Vec<Message>>;
 
 pub struct ParserState(usize);
 
-pub struct Parser<'s, 'a> {
-    pub arena: &'a Bump,
+pub struct Parser<'s, 'ast> {
+    pub arena: &'ast Bump,
     pub source: Source<'s>,
     lexer: Lexer,
     cursor: usize,
 }
 
-impl<'s, 'a> Parser<'s, 'a> {
-    pub fn new(arena: &'a Bump, source: Source<'s>, lexer: Lexer) -> Self {
+impl<'s, 'ast> Parser<'s, 'ast> {
+    pub fn new(arena: &'ast Bump, source: Source<'s>, lexer: Lexer) -> Self {
         Self {
             arena,
             source,
@@ -38,7 +38,7 @@ impl<'s, 'a> Parser<'s, 'a> {
         }
     }
 
-    pub fn parse(&mut self) -> PResult<Vec<Spanned<Item<'a>>>> {
+    pub fn parse(&mut self) -> PResult<Vec<Spanned<Item<'ast>>>> {
         let mut items = vec![];
 
         while self.has_next() {

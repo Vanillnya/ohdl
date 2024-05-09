@@ -13,14 +13,16 @@ use crate::{
     MESSAGES,
 };
 
-pub struct FlattenLookupStage<'ir, 'b> {
-    pub registry: &'b Registry<'ir>,
+use super::rough::types::RoughType;
+
+pub struct FlattenLookupStage<'ir, 'b, 'ast> {
+    pub registry: &'b Registry<RoughType<'ast>>,
     pub name_lookup: PreFlattenNameLookup,
     pub import_bucket: ImportBucket<'ir>,
     pub resolvables: Vec<ImportId>,
 }
 
-impl<'ir> FlattenLookupStage<'ir, '_> {
+impl<'ir> FlattenLookupStage<'ir, '_, '_> {
     pub fn lower(mut self) -> Option<PostFlattenNameLookup> {
         self.build_start_dependencies();
 
