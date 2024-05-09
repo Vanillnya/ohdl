@@ -73,11 +73,11 @@ impl<'ir, 'ast> RefineTypesStage<'ir, '_> {
     }
 
     fn lookup_type(&self, mut scope: ScopeId, ty: &ast::Type) -> Option<TypeId> {
-        let mut path = ty.path.0 .0.as_slice();
-        // TODO: can we check if we're the last in a for loop here?
-        loop {
-            let is_terminal = path.len() == 1;
-            let segment = path[0].0;
+        let mut path = ty.path.0 .0.iter().peekable();
+
+        while let Some(segment) = path.next() {
+            let is_terminal = path.peek().is_none();
+            let segment = segment.0;
 
             let lookup = self.name_lookup.lookup(scope, &segment, ty.path.0 .1);
             match (is_terminal, lookup) {
@@ -100,8 +100,8 @@ impl<'ir, 'ast> RefineTypesStage<'ir, '_> {
                     return None;
                 }
             }
-
-            path = &path[1..];
         }
+
+        return None;
     }
 }
