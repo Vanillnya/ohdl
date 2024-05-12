@@ -5,10 +5,8 @@ use ohdlc::{
     ir::{
         import_bucket::ImportBucket,
         name_lookup::NameLookup,
-        registry::Registry,
-        stages::{
-            flatten_lookup::FlattenLookupStage, refine_types::RefineTypesStage, rough::RoughStage,
-        },
+        registries::{ModuleRegistry, RoughEntityRegistry, RoughTypeRegistry},
+        stages::{flatten_lookup::FlattenLookupStage, refine::RefineStage, rough::RoughStage},
     },
     lexer::Lexer,
     parser::Parser,
@@ -44,16 +42,20 @@ fn main() {
     assert_debug_snapshot!(root);
 
     let ir_arena = Bump::new();
-    let mut registry = Registry::default();
+    let mut module_reg = ModuleRegistry::default();
+    let mut type_reg = RoughTypeRegistry::default();
+    let mut entity_reg = RoughEntityRegistry::default();
     let mut name_lookup = NameLookup::new();
     let mut import_bucket = ImportBucket::new();
 
     {
         let rough = RoughStage {
             arena: &ir_arena,
-            registry: &mut registry,
             name_lookup: &mut name_lookup,
             import_bucket: &mut import_bucket,
+            module_reg: &mut module_reg,
+            type_reg: &mut type_reg,
+            entity_reg: &mut entity_reg,
             root: &root,
         };
         rough.lower();
@@ -62,7 +64,7 @@ fn main() {
 
     let name_lookup = {
         let resolve = FlattenLookupStage {
-            registry: &registry,
+            module_reg: &module_reg,
             name_lookup,
             import_bucket,
             resolvables: Vec::new(),
@@ -73,21 +75,24 @@ fn main() {
     };
     let name_lookup = name_lookup.unwrap();
 
-    let refined_types = {
-        let refine_types = RefineTypesStage {
+    let (type_reg, entity_reg) = {
+        let refine = RefineStage {
             arena: &ir_arena,
             name_lookup: &name_lookup,
-            module_registry: &registry.modules,
+            module_registry: &module_reg,
         };
-        let refined_types = refine_types.lower(registry.types);
+
+        let type_reg = refine.refine_types(type_reg);
         report_messages(&source);
-        Registry {
-            modules: registry.modules,
-            types: refined_types,
-        }
+
+        let entity_reg = refine.refine_entities(entity_reg);
+        report_messages(&source);
+
+        (type_reg, entity_reg)
     };
 
-    assert_debug_snapshot!(refined_types);
+    assert_debug_snapshot!(type_reg);
+    assert_debug_snapshot!(entity_reg);
 }
 
 fn report_messages(source: &Source<'_>) {

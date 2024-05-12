@@ -5,68 +5,77 @@ use crate::{
     ir::{
         import_bucket::LookupStrategy,
         name_lookup::{PostFlattenNameLookup, Resolved, ScopeId},
-        registry::{ModuleRegistry, TypeId, TypeRegistry},
+        registries::{
+            EntityId, ModuleRegistry, RefinedEntityRegistry, RefinedTypeRegistry,
+            RoughEntityRegistry, RoughTypeRegistry, TypeId,
+        },
     },
     message::Message,
     MESSAGES,
 };
 
-use self::types::{Entity, Enum, Field, Port, Record, RefinedType, Variant};
+use self::registries::{Entity, Enum, Field, Port, Record, Type, Variant};
 
-use super::rough::types::{RoughType, RoughTypeItem};
+use super::rough::registries::RoughType;
 
-pub mod types;
+pub mod registries;
 
-pub struct RefineTypesStage<'ir, 'b> {
+pub struct RefineStage<'ir, 'b> {
     pub arena: &'ir Bump,
     pub name_lookup: &'b PostFlattenNameLookup,
     pub module_registry: &'b ModuleRegistry,
 }
 
-impl<'ir, 'ast> RefineTypesStage<'ir, '_> {
-    pub fn lower(self, registry: TypeRegistry<RoughType<'ast>>) -> TypeRegistry<RefinedType<'ir>> {
+impl<'ir, 'ast> RefineStage<'ir, '_> {
+    pub fn refine_types(&self, registry: RoughTypeRegistry<'ast>) -> RefinedTypeRegistry<'ir> {
         registry.map(|id, rough| self.refine_type(id, rough))
     }
 
-    fn refine_type(&self, id: TypeId, rough: RoughType<'ast>) -> RefinedType<'ir> {
-        match rough.1 {
-            RoughTypeItem::Entity(e) => self.refine_entity(id, rough.0, e),
-            RoughTypeItem::Record(r) => self.refine_record(id, rough.0, r),
-            RoughTypeItem::Enum(e) => self.refine_enum(id, e),
+    pub fn refine_entities(
+        &self,
+        registry: RoughEntityRegistry<'ast>,
+    ) -> RefinedEntityRegistry<'ir> {
+        registry.map(|id, rough| self.refine_entity(id, rough.0, rough.1))
+    }
+
+    fn refine_type(&self, id: TypeId, rough: RoughType<'ast>) -> Type<'ir> {
+        match rough {
+            RoughType::Record(scope, r) => self.refine_record(id, scope, r),
+            RoughType::Enum(e) => self.refine_enum(id, e),
         }
     }
 
-    fn refine_entity(&self, id: TypeId, scope: ScopeId, e: &ast::Entity) -> RefinedType<'ir> {
+    fn refine_entity(&self, id: EntityId, scope: ScopeId, e: &ast::Entity) -> Entity<'ir> {
         let ports = e.ports.iter().map(|port| Port {
             kind: port.kind.0,
             name: port.name,
             ty: self.lookup_type(scope, &port.ty),
         });
 
-        RefinedType::Entity(Entity {
+        Entity {
             type_id: id,
             name: e.name,
             ports: self.arena.alloc_slice_fill_iter(ports),
-        })
+        }
     }
 
-    fn refine_record(&self, id: TypeId, scope: ScopeId, r: &ast::Record) -> RefinedType<'ir> {
+    fn refine_record(&self, id: TypeId, scope: ScopeId, r: &ast::Record) -> Type<'ir> {
         let fields = r.fields.iter().map(|field| Field {
             name: field.name,
             ty: self.lookup_type(scope, &field.ty),
         });
 
-        RefinedType::Record(Record {
+        Type::Record(Record {
             type_id: id,
             name: r.name,
             fields: self.arena.alloc_slice_fill_iter(fields),
         })
     }
 
-    fn refine_enum(&self, id: TypeId, e: &ast::Enum) -> RefinedType<'ir> {
+    fn refine_enum(&self, id: TypeId, e: &ast::Enum) -> Type<'ir> {
         let varaints = e.variants.iter().map(|&ident| Variant { ident });
 
-        RefinedType::Enum(Enum {
+        Type::Enum(Enum {
             type_id: id,
             name: e.name,
             variants: self.arena.alloc_slice_fill_iter(varaints),
@@ -109,6 +118,10 @@ impl<'ir, 'ast> RefineTypesStage<'ir, '_> {
                     return None;
                 }
 
+                (_, Some(Resolved::Entity(_))) => {
+                    // TODO: better error, this can also appear at non-end position
+                    MESSAGES.report(Message::wrong_path_end(segment, "Type", "Entity"))
+                }
                 (_, None) => {
                     MESSAGES.report(Message::could_not_resolve(segment));
                     return None;

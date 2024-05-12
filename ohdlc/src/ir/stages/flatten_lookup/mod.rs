@@ -6,22 +6,20 @@ use crate::{
         name_lookup::{
             LookupScope, PostFlattenNameLookup, PreFlattenNameLookup, Resolvable, Resolved,
         },
-        registry::Registry,
+        registries::ModuleRegistry,
     },
     message::Message,
     MESSAGES,
 };
 
-use super::rough::types::RoughType;
-
-pub struct FlattenLookupStage<'ir, 'b, 'ast> {
-    pub registry: &'b Registry<RoughType<'ast>>,
+pub struct FlattenLookupStage<'ir, 'b> {
+    pub module_reg: &'b ModuleRegistry,
     pub name_lookup: PreFlattenNameLookup,
     pub import_bucket: ImportBucket<'ir>,
     pub resolvables: Vec<ImportId>,
 }
 
-impl<'ir> FlattenLookupStage<'ir, '_, '_> {
+impl<'ir> FlattenLookupStage<'ir, '_> {
     pub fn lower(mut self) -> Option<PostFlattenNameLookup> {
         self.build_start_dependencies();
 
@@ -56,8 +54,12 @@ impl<'ir> FlattenLookupStage<'ir, '_, '_> {
                                 Resolved::Type(_) => {
                                     MESSAGES.report(Message::use_continues_after_type(segment.1));
                                 }
+                                Resolved::Entity(_) => {
+                                    // TODO: better error, this is actually an entity
+                                    MESSAGES.report(Message::use_continues_after_type(segment.1));
+                                }
                                 Resolved::Module(m) => {
-                                    let module = &self.registry.modules[m];
+                                    let module = &self.module_reg[m];
                                     let sub_path = &import.path[1..];
                                     import.scope = module.scope;
                                     import.strategy = LookupStrategy::Direct;

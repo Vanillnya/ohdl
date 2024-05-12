@@ -15,7 +15,7 @@ use crate::{
 
 use super::{
     import_bucket::{ImportId, LookupStrategy},
-    registry::TypeId,
+    registries::{EntityId, TypeId},
 };
 
 simple_key!(
@@ -107,6 +107,7 @@ pub enum Resolvable {
 
 #[derive(Debug, Clone, Copy)]
 pub enum Resolved {
-    Type(TypeId),
     Module(ModuleId),
+    Type(TypeId),
+    Entity(EntityId),
 }
