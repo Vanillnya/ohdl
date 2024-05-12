@@ -8,3 +8,6 @@ pub enum RoughType<'ast> {
 
 #[derive(Debug)]
 pub struct RoughEntity<'ast>(pub ScopeId, pub &'ast ast::Entity);
+
+#[derive(Debug)]
+pub struct RoughArch<'ast>(pub ScopeId, pub &'ast ast::Arch<'ast>);

@@ -82,6 +82,7 @@ impl<'ir, 'ast> RefineStage<'ir, '_> {
         })
     }
 
+    // TODO: equal to one in `architectures`, fix duplicate pls
     fn lookup_type(&self, scope: ScopeId, ty: &ast::Type) -> Option<TypeId> {
         let mut lookup_scope = match ty.path.0 .1 {
             ast::PathStart::Root => self.name_lookup.root,
