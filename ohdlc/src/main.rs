@@ -7,8 +7,11 @@ use ohdlc::{
     ir::{
         import_bucket::ImportBucket,
         name_lookup::NameLookup,
-        registries::{ModuleRegistry, RoughEntityRegistry, RoughTypeRegistry},
-        stages::{flatten_lookup::FlattenLookupStage, refine::RefineStage, rough::RoughStage},
+        registries::{ModuleRegistry, RoughArchRegistry, RoughEntityRegistry, RoughTypeRegistry},
+        stages::{
+            architectures::ArchitectureStage, flatten_lookup::FlattenLookupStage,
+            refine::RefineStage, rough::RoughStage,
+        },
     },
     lexer::Lexer,
     parser::Parser,
@@ -44,6 +47,7 @@ fn main() -> Result<(), ()> {
     let mut module_reg = ModuleRegistry::default();
     let mut type_reg = RoughTypeRegistry::default();
     let mut entity_reg = RoughEntityRegistry::default();
+    let mut arch_reg = RoughArchRegistry::default();
     let mut name_lookup = NameLookup::new();
     let mut import_bucket = ImportBucket::new();
 
@@ -55,6 +59,7 @@ fn main() -> Result<(), ()> {
             module_reg: &mut module_reg,
             type_reg: &mut type_reg,
             entity_reg: &mut entity_reg,
+            arch_reg: &mut arch_reg,
             root: &root,
         };
         rough.lower();
@@ -92,6 +97,17 @@ fn main() -> Result<(), ()> {
 
     println!("{type_reg:#?}");
     println!("{entity_reg:#?}");
+
+    {
+        let architectures = ArchitectureStage {
+            arena: &ir_arena,
+            name_lookup: &name_lookup,
+            module_reg: &module_reg,
+            arch_reg: &arch_reg,
+        };
+        architectures.lower();
+        report_messages(&source);
+    };
 
     Ok(())
 }

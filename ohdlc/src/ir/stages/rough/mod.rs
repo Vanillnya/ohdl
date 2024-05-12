@@ -6,13 +6,13 @@ use crate::{
         import_bucket::{Import, ImportBucket, LookupStrategy},
         modules::Module,
         name_lookup::{PreFlattenNameLookup, Resolvable, Resolved, ScopeId},
-        registries::{ModuleRegistry, RoughEntityRegistry, RoughTypeRegistry},
+        registries::{ModuleRegistry, RoughArchRegistry, RoughEntityRegistry, RoughTypeRegistry},
     },
     span::Spanned,
     symbol::Ident,
 };
 
-use self::registries::{RoughEntity, RoughType};
+use self::registries::{RoughArch, RoughEntity, RoughType};
 
 pub mod registries;
 
@@ -23,6 +23,7 @@ pub struct RoughStage<'ir, 'b, 'ast> {
     pub module_reg: &'b mut ModuleRegistry,
     pub type_reg: &'b mut RoughTypeRegistry<'ast>,
     pub entity_reg: &'b mut RoughEntityRegistry<'ast>,
+    pub arch_reg: &'b mut RoughArchRegistry<'ast>,
     pub root: &'ast [Spanned<ast::Item<'ast>>],
 }
 
@@ -40,7 +41,9 @@ impl<'ir, 'ast> RoughStage<'ir, '_, 'ast> {
             ast::Item::Entity(e) => self.introduce_entity(scope, e.name, RoughEntity(scope, e)),
             ast::Item::Record(r) => self.introduce_type(scope, r.name, RoughType::Record(scope, r)),
             ast::Item::Enum(e) => self.introduce_type(scope, e.name, RoughType::Enum(e)),
-            ast::Item::Arch(_) => {}
+            ast::Item::Arch(a) => {
+                self.arch_reg.insert(RoughArch(scope, a));
+            }
         }
     }
 
