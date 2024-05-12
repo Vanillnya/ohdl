@@ -1,0 +1,116 @@
+---
+source: tests/basic.rs
+expression: entity_reg
+---
+{
+    EntityId(
+        0,
+    ): Entity {
+        type_id: EntityId(
+            0,
+        ),
+        name: `HalfAdder`:271..280,
+        ports: [
+            Port {
+                kind: Input,
+                name: `a`:291..292,
+                ty: Some(
+                    TypeId(
+                        0,
+                    ),
+                ),
+            },
+            Port {
+                kind: Input,
+                name: `b`:311..312,
+                ty: Some(
+                    TypeId(
+                        0,
+                    ),
+                ),
+            },
+            Port {
+                kind: Output,
+                name: `o`:331..332,
+                ty: Some(
+                    TypeId(
+                        0,
+                    ),
+                ),
+            },
+            Port {
+                kind: Output,
+                name: `c`:351..352,
+                ty: Some(
+                    TypeId(
+                        0,
+                    ),
+                ),
+            },
+        ],
+    },
+    EntityId(
+        1,
+    ): Entity {
+        type_id: EntityId(
+            1,
+        ),
+        name: `Lol`:514..517,
+        ports: [],
+    },
+    EntityId(
+        2,
+    ): Entity {
+        type_id: EntityId(
+            2,
+        ),
+        name: `FullAdder`:538..547,
+        ports: [
+            Port {
+                kind: Input,
+                name: `a`:558..559,
+                ty: Some(
+                    TypeId(
+                        0,
+                    ),
+                ),
+            },
+            Port {
+                kind: Input,
+                name: `b`:578..579,
+                ty: Some(
+                    TypeId(
+                        0,
+                    ),
+                ),
+            },
+            Port {
+                kind: Input,
+                name: `ci`:598..600,
+                ty: Some(
+                    TypeId(
+                        0,
+                    ),
+                ),
+            },
+            Port {
+                kind: Output,
+                name: `o`:619..620,
+                ty: Some(
+                    TypeId(
+                        0,
+                    ),
+                ),
+            },
+            Port {
+                kind: Output,
+                name: `co`:639..641,
+                ty: Some(
+                    TypeId(
+                        0,
+                    ),
+                ),
+            },
+        ],
+    },
+}

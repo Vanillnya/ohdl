@@ -1,247 +1,79 @@
 ---
 source: tests/basic.rs
-expression: refined_types
+expression: type_reg
 ---
-Registry {
-    modules: {
-        ModuleId(
-            0,
-        ): Module {
-            name: `std`:34..37,
-            scope: ScopeId(
+{
+    TypeId(
+        0,
+    ): Enum(
+        Enum {
+            type_id: TypeId(
+                0,
+            ),
+            name: `Logical`:49..56,
+            variants: [
+                Variant {
+                    ident: `High`:67..71,
+                },
+                Variant {
+                    ident: `Low`:81..84,
+                },
+            ],
+        },
+    ),
+    TypeId(
+        1,
+    ): Record(
+        Record {
+            type_id: TypeId(
                 1,
             ),
+            name: `MyRecord`:166..174,
+            fields: [
+                Field {
+                    name: `a`:181..182,
+                    ty: Some(
+                        TypeId(
+                            0,
+                        ),
+                    ),
+                },
+                Field {
+                    name: `b`:197..198,
+                    ty: Some(
+                        TypeId(
+                            0,
+                        ),
+                    ),
+                },
+            ],
         },
-        ModuleId(
-            1,
-        ): Module {
-            name: `x`:119..120,
-            scope: ScopeId(
+    ),
+    TypeId(
+        2,
+    ): Enum(
+        Enum {
+            type_id: TypeId(
                 2,
             ),
+            name: `MyEnum`:217..223,
+            variants: [
+                Variant {
+                    ident: `A`:230..231,
+                },
+                Variant {
+                    ident: `B`:237..238,
+                },
+                Variant {
+                    ident: `C`:244..245,
+                },
+                Variant {
+                    ident: `D`:251..252,
+                },
+                Variant {
+                    ident: `E`:258..259,
+                },
+            ],
         },
-        ModuleId(
-            2,
-        ): Module {
-            name: `y`:141..142,
-            scope: ScopeId(
-                3,
-            ),
-        },
-        ModuleId(
-            3,
-        ): Module {
-            name: `a`:450..451,
-            scope: ScopeId(
-                4,
-            ),
-        },
-        ModuleId(
-            4,
-        ): Module {
-            name: `other`:479..484,
-            scope: ScopeId(
-                5,
-            ),
-        },
-        ModuleId(
-            5,
-        ): Module {
-            name: `b`:495..496,
-            scope: ScopeId(
-                6,
-            ),
-        },
-    },
-    types: {
-        TypeId(
-            0,
-        ): Enum(
-            Enum {
-                type_id: TypeId(
-                    0,
-                ),
-                name: `Logical`:49..56,
-                variants: [
-                    Variant {
-                        ident: `High`:67..71,
-                    },
-                    Variant {
-                        ident: `Low`:81..84,
-                    },
-                ],
-            },
-        ),
-        TypeId(
-            1,
-        ): Record(
-            Record {
-                type_id: TypeId(
-                    1,
-                ),
-                name: `MyRecord`:166..174,
-                fields: [
-                    Field {
-                        name: `a`:181..182,
-                        ty: Some(
-                            TypeId(
-                                0,
-                            ),
-                        ),
-                    },
-                    Field {
-                        name: `b`:197..198,
-                        ty: Some(
-                            TypeId(
-                                0,
-                            ),
-                        ),
-                    },
-                ],
-            },
-        ),
-        TypeId(
-            2,
-        ): Enum(
-            Enum {
-                type_id: TypeId(
-                    2,
-                ),
-                name: `MyEnum`:217..223,
-                variants: [
-                    Variant {
-                        ident: `A`:230..231,
-                    },
-                    Variant {
-                        ident: `B`:237..238,
-                    },
-                    Variant {
-                        ident: `C`:244..245,
-                    },
-                    Variant {
-                        ident: `D`:251..252,
-                    },
-                    Variant {
-                        ident: `E`:258..259,
-                    },
-                ],
-            },
-        ),
-        TypeId(
-            3,
-        ): Entity(
-            Entity {
-                type_id: TypeId(
-                    3,
-                ),
-                name: `HalfAdder`:271..280,
-                ports: [
-                    Port {
-                        kind: Input,
-                        name: `a`:291..292,
-                        ty: Some(
-                            TypeId(
-                                0,
-                            ),
-                        ),
-                    },
-                    Port {
-                        kind: Input,
-                        name: `b`:311..312,
-                        ty: Some(
-                            TypeId(
-                                0,
-                            ),
-                        ),
-                    },
-                    Port {
-                        kind: Output,
-                        name: `o`:331..332,
-                        ty: Some(
-                            TypeId(
-                                0,
-                            ),
-                        ),
-                    },
-                    Port {
-                        kind: Output,
-                        name: `c`:351..352,
-                        ty: Some(
-                            TypeId(
-                                0,
-                            ),
-                        ),
-                    },
-                ],
-            },
-        ),
-        TypeId(
-            4,
-        ): Entity(
-            Entity {
-                type_id: TypeId(
-                    4,
-                ),
-                name: `Lol`:514..517,
-                ports: [],
-            },
-        ),
-        TypeId(
-            5,
-        ): Entity(
-            Entity {
-                type_id: TypeId(
-                    5,
-                ),
-                name: `FullAdder`:538..547,
-                ports: [
-                    Port {
-                        kind: Input,
-                        name: `a`:558..559,
-                        ty: Some(
-                            TypeId(
-                                0,
-                            ),
-                        ),
-                    },
-                    Port {
-                        kind: Input,
-                        name: `b`:578..579,
-                        ty: Some(
-                            TypeId(
-                                0,
-                            ),
-                        ),
-                    },
-                    Port {
-                        kind: Input,
-                        name: `ci`:598..600,
-                        ty: Some(
-                            TypeId(
-                                0,
-                            ),
-                        ),
-                    },
-                    Port {
-                        kind: Output,
-                        name: `o`:619..620,
-                        ty: Some(
-                            TypeId(
-                                0,
-                            ),
-                        ),
-                    },
-                    Port {
-                        kind: Output,
-                        name: `co`:639..641,
-                        ty: Some(
-                            TypeId(
-                                0,
-                            ),
-                        ),
-                    },
-                ],
-            },
-        ),
-    },
+    ),
 }

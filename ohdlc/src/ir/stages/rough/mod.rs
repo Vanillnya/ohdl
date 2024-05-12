@@ -6,21 +6,23 @@ use crate::{
         import_bucket::{Import, ImportBucket, LookupStrategy},
         modules::Module,
         name_lookup::{PreFlattenNameLookup, Resolvable, Resolved, ScopeId},
-        registry::Registry,
+        registries::{ModuleRegistry, RoughEntityRegistry, RoughTypeRegistry},
     },
     span::Spanned,
     symbol::Ident,
 };
 
-use self::types::{RoughType, RoughTypeItem};
+use self::registries::{RoughEntity, RoughType};
 
-pub mod types;
+pub mod registries;
 
 pub struct RoughStage<'ir, 'b, 'ast> {
     pub arena: &'ir Bump,
-    pub registry: &'b mut Registry<RoughType<'ast>>,
     pub name_lookup: &'b mut PreFlattenNameLookup,
     pub import_bucket: &'b mut ImportBucket<'ir>,
+    pub module_reg: &'b mut ModuleRegistry,
+    pub type_reg: &'b mut RoughTypeRegistry<'ast>,
+    pub entity_reg: &'b mut RoughEntityRegistry<'ast>,
     pub root: &'ast [Spanned<ast::Item<'ast>>],
 }
 
@@ -35,9 +37,9 @@ impl<'ir, 'ast> RoughStage<'ir, '_, 'ast> {
         match item {
             ast::Item::Use(u) => self.lower_use(scope, u),
             ast::Item::Module(m) => self.lower_mod(scope, m),
-            ast::Item::Entity(e) => self.introduce_type(scope, e.name, RoughTypeItem::Entity(e)),
-            ast::Item::Record(r) => self.introduce_type(scope, r.name, RoughTypeItem::Record(r)),
-            ast::Item::Enum(e) => self.introduce_type(scope, e.name, RoughTypeItem::Enum(e)),
+            ast::Item::Entity(e) => self.introduce_entity(scope, e.name, RoughEntity(scope, e)),
+            ast::Item::Record(r) => self.introduce_type(scope, r.name, RoughType::Record(scope, r)),
+            ast::Item::Enum(e) => self.introduce_type(scope, e.name, RoughType::Enum(e)),
             ast::Item::Arch(_) => {}
         }
     }
@@ -66,7 +68,7 @@ impl<'ir, 'ast> RoughStage<'ir, '_, 'ast> {
     fn lower_mod(&mut self, scope: ScopeId, m: &'ast ast::Module<'ast>) {
         let sub_scope = self.name_lookup.sub_scope(scope);
 
-        let module = self.registry.modules.insert(Module {
+        let module = self.module_reg.insert(Module {
             name: m.name,
             scope: sub_scope,
         });
@@ -81,8 +83,15 @@ impl<'ir, 'ast> RoughStage<'ir, '_, 'ast> {
         }
     }
 
-    fn introduce_type(&mut self, scope: ScopeId, name: Ident, t: RoughTypeItem<'ast>) {
-        let id = self.registry.types.insert(RoughType(scope, t));
+    fn introduce_entity(&mut self, scope: ScopeId, name: Ident, e: RoughEntity<'ast>) {
+        let id = self.entity_reg.insert(e);
+
+        self.name_lookup
+            .introduce(scope, name, Resolvable::Resolved(Resolved::Entity(id)));
+    }
+
+    fn introduce_type(&mut self, scope: ScopeId, name: Ident, t: RoughType<'ast>) {
+        let id = self.type_reg.insert(t);
 
         self.name_lookup
             .introduce(scope, name, Resolvable::Resolved(Resolved::Type(id)));
